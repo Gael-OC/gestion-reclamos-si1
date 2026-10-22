@@ -1,0 +1,12 @@
+# Dependencias directas fijadas. requirements.txt contiene la resolución completa.
+fastapi==0.161.1
+uvicorn==0.54.0
+pydantic==2.14.1
+pydantic-settings==2.16.1
+SQLAlchemy==2.1.6
+psycopg[binary]==3.3.6
+alembic==1.20.1
+
+# Verificaciones locales: unittest pertenece a la biblioteca estándar de Python.
+httpx2==2.16.0
+ruff==0.17.2

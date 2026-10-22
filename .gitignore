@@ -1,0 +1,25 @@
+# Dependencias y compilación
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.tsbuildinfo
+
+# Variables locales y secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Archivos locales
+.DS_Store
+.idea/
+.vscode/
+*.log
