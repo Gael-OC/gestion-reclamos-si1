@@ -42,6 +42,9 @@ propuesto para los endpoints. Mantener esta documentación al día con los avanc
 
 Node.js 24 LTS; React 19, React Router 8, Vite 8, Tailwind CSS 4 y TypeScript 6.0.
 TypeScript se mantiene en 6.0 por compatibilidad con `typescript-eslint`.
+Para la propuesta de sistema de diseño (ver abajo) el frontend suma three.js,
+React Three Fiber y drei (fondo 3D), Motion (animaciones), NumberFlow (cifras
+animadas) y Lucide (íconos).
 Backend con Python 3.12–3.14, FastAPI, Pydantic 2, SQLAlchemy 2.1,
 Psycopg 3 y Alembic. Compose utiliza PostgreSQL 18.
 Las versiones concretas quedan en `frontend/package-lock.json` y
@@ -60,7 +63,14 @@ y la [imagen oficial de PostgreSQL](https://hub.docker.com/_/postgres).
 - Acceso síncrono a PostgreSQL con Psycopg como punto de partida; revisar si una
   necesidad concreta justifica otro enfoque.
 - Definición, fuentes y actualización de los seis KPI; vistas y permisos de lectura.
-- Identidad visual y componentes comunes. Los tokens actuales son neutrales y provisionales.
+- Identidad visual y componentes comunes. **Propuesta en revisión:** sistema de
+  diseño "islas de vidrio" (glassmorphism sobrio, solo tema claro) sobre un cielo
+  gris acero con objetos 3D translúcidos. Sus tokens están en
+  `frontend/src/styles/global.css` (`@theme` de Tailwind y utilidades
+  `glass-shell`, `glass-panel`, `glass-tile`, `glass-strong`, `glass-island`).
+  Componentes iniciales: `components/layout/Backdrop` (escena 3D, carga diferida y
+  respaldo en CSS si no hay WebGL), `components/layout/AppShell` y
+  `components/ui/Glass`. Falta que el equipo la confirme.
 - Reparto de tareas entre los cinco integrantes y responsables de archivos compartidos.
   Propuesta inicial: Gael y Marianela trabajan los mockups del frontend; los otros
   tres integrantes acuerdan los módulos del backend antes de comenzar.
