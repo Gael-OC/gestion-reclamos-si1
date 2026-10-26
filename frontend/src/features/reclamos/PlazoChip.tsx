@@ -17,7 +17,7 @@ function dayWord(n: number) {
 
 /**
  * Plazo en días corridos con un mini anillo que muestra cuánto del plazo se
- * consumió: azul con margen, warning a 0–3 días y danger con halo si venció.
+ * consumió: azul con margen, warning a 0–3 días y danger si venció.
  */
 export function PlazoChip({
   dias = 0,
@@ -47,7 +47,7 @@ export function PlazoChip({
   let tone = 'pill-brand'
   let text = `${dias} ${dayWord(dias)} restantes`
   if (dias < 0) {
-    tone = 'pill-danger pill-pulse'
+    tone = 'pill-danger'
     text = `Vencido hace ${-dias} ${dayWord(-dias)}`
   } else if (dias === 0) {
     tone = 'pill-warning'

@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { ArrowUpRight, RefreshCw, UserPlus } from 'lucide-react'
-import NumberFlow from '@number-flow/react'
 import { Glass } from '@/components/ui/Glass'
-import { useRevealValue } from '@/lib/useRevealValue'
 import { Button } from '@/components/ui/Button'
 import { IconButton } from '@/components/ui/IconButton'
 import { SegmentedControl } from '@/components/ui/SegmentedControl'
@@ -64,25 +62,18 @@ const columns: GlassListColumn<ReclamoAtencion>[] = [
 export function DashboardPage() {
   const [alcance, setAlcance] = useState<'todos' | 'mios'>('todos')
   const [selected, setSelected] = useState('R-2026-004812')
-  const total = useRevealValue(reclamosActivos.total)
 
   const [etapa1, etapa2, etapa3] = reclamosActivos.etapas
 
   return (
     <div className="grid flex-1 gap-6 *:min-w-0 md:grid-cols-2 lg:grid-cols-3 tall:min-h-0 tall:grid-rows-2 compact:gap-5">
-      <Glass
-        float
-        enter={2}
-        className="flex min-h-0 flex-col md:col-span-2 compact:p-4"
-      >
+      <Glass className="flex min-h-0 flex-col md:col-span-2 compact:p-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-label text-ink-muted">Reclamos activos</h1>
-            <NumberFlow
-              value={total}
-              locales="es-CL"
-              className="text-hero-number compact:text-[38px] compact:leading-[42px]"
-            />
+            <span className="text-hero-number tabular-nums compact:text-[38px] compact:leading-[42px]">
+              {reclamosActivos.total.toLocaleString('es-CL')}
+            </span>
           </div>
           <SegmentedControl
             label="Alcance"
@@ -111,7 +102,6 @@ export function DashboardPage() {
       </Glass>
 
       <TrendCard
-        enter={3}
         title="Cumplimiento de plazos"
         value={cumplimientoPlazos.value}
         unit="%"
@@ -124,8 +114,6 @@ export function DashboardPage() {
       />
 
       <Glass
-        float
-        enter={4}
         title="Ingresos por mes"
         action={<Button size="sm">Mensual</Button>}
         className="flex min-h-[300px] flex-col tall:min-h-0 compact:p-4"
@@ -139,8 +127,6 @@ export function DashboardPage() {
       </Glass>
 
       <Glass
-        float
-        enter={5}
         title="Requieren atención"
         subtitle="Ordenados por fecha límite"
         action={

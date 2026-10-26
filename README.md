@@ -10,7 +10,7 @@ como caso de estudio a SERNAC Coquimbo.
 
 ## Tecnologías utilizadas
 
-- Frontend: React, TypeScript, Vite, Tailwind CSS y React Router; three.js con React Three Fiber y drei, Motion, NumberFlow y Lucide para la propuesta de sistema de diseño.
+- Frontend: React, TypeScript, Vite, Tailwind CSS y React Router; Motion para las transiciones de selección y Lucide para los íconos de la propuesta de sistema de diseño.
 - Backend: Python, FastAPI, Pydantic, SQLAlchemy y Alembic.
 - Base de datos: PostgreSQL 18 mediante Docker Compose local.
 - Analítica futura: Power BI con acceso de solo lectura.
@@ -116,6 +116,10 @@ No hay formularios, autenticación ni llamadas a la API. Los tokens de la
 propuesta de sistema de diseño están en `src/styles/global.css` y los componentes
 compartidos iniciales son `Glass` (`components/ui/`) y `Backdrop`
 (`components/layout/`); la propuesta aún debe confirmarla el equipo.
+El fondo usa formas estáticas en CSS, sin WebGL. Los paneles principales tienen
+desenfoque de 12 px; controles y etiquetas usan fondos translúcidos sin desenfoque.
+Cifras y gráficos se muestran completos al cargar. Solo las interacciones tienen
+transiciones breves, respetando la preferencia de movimiento reducido.
 Las variables `VITE_*` son públicas: nunca guardar secretos en el frontend.
 
 ### 4. Backend — en otra terminal, desde la raíz

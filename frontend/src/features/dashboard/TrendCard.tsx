@@ -1,8 +1,5 @@
 import { useId, type ReactNode } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
-import NumberFlow from '@number-flow/react'
 import { Glass } from '@/components/ui/Glass'
-import { useRevealValue } from '@/lib/useRevealValue'
 
 type TrendCardProps = {
   title: string
@@ -13,7 +10,6 @@ type TrendCardProps = {
   startLabel?: string
   endLabel?: string
   action?: ReactNode
-  enter?: number
   className?: string
 }
 
@@ -38,8 +34,7 @@ function smoothPath(points: [number, number][]) {
 }
 
 /**
- * Isla de vidrio que cuenta un indicador como tendencia: cifra que se anima y
- * una línea azul que se dibuja, con un relleno tenue bajo la curva.
+ * Indicador estático con una línea de tendencia y relleno tenue bajo la curva.
  */
 export function TrendCard({
   title,
@@ -50,12 +45,9 @@ export function TrendCard({
   startLabel,
   endLabel,
   action,
-  enter,
   className,
 }: TrendCardProps) {
-  const reduce = useReducedMotion()
   const id = useId().replaceAll(':', '')
-  const shown = useRevealValue(value)
 
   const min = Math.min(...points)
   const max = Math.max(...points)
@@ -70,8 +62,6 @@ export function TrendCard({
 
   return (
     <Glass
-      float
-      enter={enter}
       className={`flex min-h-[240px] flex-col overflow-hidden tall:min-h-0 compact:p-4 ${className ?? ''}`}
     >
       <header className="flex items-center justify-between">
@@ -79,7 +69,9 @@ export function TrendCard({
         {action}
       </header>
       <div className="mt-3 flex items-baseline gap-1">
-        <NumberFlow value={shown} locales="es-CL" className="text-metric" />
+        <span className="text-metric tabular-nums">
+          {value.toLocaleString('es-CL')}
+        </span>
         {unit && <span className="text-[16px] text-ink-muted">{unit}</span>}
       </div>
       {caption && <p className="text-caption text-ink-muted">{caption}</p>}
@@ -106,23 +98,14 @@ export function TrendCard({
               />
             </linearGradient>
           </defs>
-          <motion.path
-            d={area}
-            fill={`url(#${id}-area)`}
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.2, delay: 0.5 }}
-          />
-          <motion.path
+          <path d={area} fill={`url(#${id}-area)`} />
+          <path
             d={line}
             fill="none"
             strokeWidth={2.25}
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
             style={{ stroke: 'var(--color-brand)' }}
-            initial={reduce ? false : { pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           />
         </svg>
         {/* Puntos y etiquetas en HTML para que no se deformen con el SVG estirado */}

@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
 import { cn } from '@/lib/cn'
 
 export type GlassListColumn<R> = {
@@ -25,7 +24,7 @@ type GlassListProps<R extends { id: string }> = {
 
 /**
  * Filas sobre vidrio, sin bordes de tabla. La fila seleccionada se eleva con
- * un degradado vidrio → azul. Las filas entran escalonadas.
+ * un degradado vidrio → azul. Solo las interacciones tienen una transición breve.
  */
 export function GlassList<R extends { id: string }>({
   columns,
@@ -35,7 +34,6 @@ export function GlassList<R extends { id: string }>({
   onRowClick,
   className,
 }: GlassListProps<R>) {
-  const reduce = useReducedMotion()
   const template = columns.map((column) => column.width ?? '1fr').join(' ')
 
   return (
@@ -54,7 +52,7 @@ export function GlassList<R extends { id: string }>({
       {rows.map((row, index) => {
         const selected = row.id === selectedId
         return (
-          <motion.div
+          <div
             key={row.id}
             role="row"
             tabIndex={onRowClick ? 0 : undefined}
@@ -69,22 +67,15 @@ export function GlassList<R extends { id: string }>({
                   }
                 : undefined
             }
-            initial={reduce ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0, scale: selected ? 1.015 : 1 }}
-            transition={{
-              duration: 0.5,
-              ease: [0.22, 1, 0.36, 1],
-              delay: reduce ? 0 : 0.15 + index * 0.055,
-            }}
             style={{ gridTemplateColumns: template }}
             className={cn(
-              'grid items-center gap-3 rounded-md px-3 py-2.5 transition-[background-color,box-shadow] duration-200 compact:py-2',
+              'grid items-center gap-3 rounded-md px-3 py-2.5 transition-[background-color,box-shadow,scale] duration-200 compact:py-2',
               index < rows.length - 1 &&
                 !selected &&
                 'border-b border-glass-shade',
               onRowClick && 'cursor-pointer hover:bg-glass-tile',
               selected &&
-                'bg-linear-to-r from-glass-strong via-glass-tile to-brand-soft shadow-tile',
+                'bg-linear-to-r from-glass-strong via-glass-tile to-brand-soft shadow-tile motion-safe:scale-[1.015]',
             )}
           >
             {columns.map((column) => (
@@ -100,7 +91,7 @@ export function GlassList<R extends { id: string }>({
                 {column.render(row)}
               </span>
             ))}
-          </motion.div>
+          </div>
         )
       })}
     </div>

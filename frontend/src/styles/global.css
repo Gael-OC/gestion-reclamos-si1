@@ -2,7 +2,7 @@
 
 /*
  * Sistema de diseño "Gestión de Reclamos" (propuesta en revisión por el equipo).
- * Islas de vidrio sobre un cielo gris acero con objetos 3D translúcidos.
+ * Islas de vidrio sobre un cielo gris acero con formas estáticas translúcidas.
  * Fuente de verdad: los tokens publicados del sistema de diseño; si cambian allá,
  * actualizar aquí. Solo tema claro.
  */
@@ -18,7 +18,7 @@
   --color-sky-perla: #e6e5ec;
   --color-sky-hielo: #dbe5f0;
 
-  /* Objetos 3D y burbujas (decorativos) */
+  /* Formas y burbujas (decorativos) */
   --color-orb-marino: #2c3e66;
   --color-orb-marino-deep: #1e2b4a;
   --color-orb-acero: #5b7398;
@@ -119,25 +119,12 @@
   --shadow-ink: inset 0 1px 0 #ffffff2e, 0 10px 22px -10px #12172a99;
   --shadow-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #24489a;
 
-  /* Desenfoque del fondo por nivel de vidrio (backdrop-blur-*) */
-  --blur-shell: 40px;
-  --blur-panel: 24px;
-  --blur-tile: 14px;
+  /* Desenfoque reservado a las superficies principales. */
+  --blur-panel: 12px;
 
   /* Movimiento */
   --ease-glass: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --animate-island: island 9s ease-in-out infinite;
-
-  @keyframes island {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    50% {
-      translate: 0 -6px;
-    }
-  }
 }
 
 @layer base {
@@ -190,7 +177,6 @@
   isolation: isolate;
   border: 1px solid var(--color-glass-rim);
   color: var(--color-ink);
-  backdrop-filter: blur(var(--blur-panel)) saturate(180%);
 
   /* Brillo especular arriba a la izquierda */
   &::before {
@@ -214,14 +200,15 @@
   background-color: var(--color-glass-shell);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-shell);
-  backdrop-filter: blur(var(--blur-shell)) saturate(180%);
+  backdrop-filter: blur(var(--blur-panel));
 }
 
 @utility glass-panel {
   @apply glass-base;
   background-color: var(--color-glass-panel);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-panel);
+  box-shadow: var(--shadow-island);
+  backdrop-filter: blur(var(--blur-panel));
 }
 
 @utility glass-tile {
@@ -229,7 +216,6 @@
   background-color: var(--color-glass-tile);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-tile);
-  backdrop-filter: blur(var(--blur-tile)) saturate(180%);
 }
 
 @utility glass-strong {
@@ -237,14 +223,6 @@
   background-color: var(--color-glass-strong);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-tile);
-  backdrop-filter: blur(var(--blur-tile)) saturate(180%);
-}
-
-/* Isla flotante: vaivén lento y sombra más profunda */
-@utility glass-island {
-  box-shadow: var(--shadow-island);
-  animation: var(--animate-island);
-  animation-delay: var(--float-delay, 0s);
 }
 
 /*
@@ -258,6 +236,62 @@
 
 /* Píldoras de estado: vidrio con el tono solo en el ícono y en el borde */
 @layer components {
+  .backdrop-orb {
+    position: absolute;
+    display: block;
+    width: clamp(140px, 25vw, 360px);
+    aspect-ratio: 1;
+    border: 1px solid var(--color-glass-rim);
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 32% 25%,
+      var(--color-glass-shine),
+      var(--orb-tone) 72%
+    );
+    box-shadow: inset -12px -18px 28px var(--color-glass-shade);
+  }
+  .backdrop-orb-marino {
+    --orb-tone: var(--color-orb-marino);
+    top: 4%;
+    right: -5%;
+    opacity: 0.4;
+  }
+  .backdrop-orb-pizarra {
+    --orb-tone: var(--color-orb-pizarra);
+    bottom: -5%;
+    left: -4%;
+    opacity: 0.38;
+  }
+  .backdrop-orb-perla {
+    --orb-tone: var(--color-orb-perla);
+    top: -2%;
+    left: 10%;
+    width: clamp(64px, 9vw, 130px);
+    opacity: 0.55;
+  }
+  .backdrop-orb-acero {
+    --orb-tone: var(--color-orb-acero);
+    top: 32%;
+    left: 3%;
+    width: clamp(100px, 16vw, 220px);
+    border-radius: 46% 54% 60% 40%;
+    opacity: 0.38;
+  }
+  .backdrop-ring {
+    position: absolute;
+    right: -2%;
+    bottom: 2%;
+    width: clamp(160px, 23vw, 330px);
+    aspect-ratio: 1;
+    border: clamp(22px, 4vw, 52px) solid var(--color-glass-shell);
+    border-radius: 50%;
+    box-shadow:
+      inset 2px 3px 6px var(--color-glass-shine),
+      inset -4px -6px 12px var(--color-glass-shade),
+      3px 6px 12px var(--color-glass-shade);
+    transform: rotate(-30deg) scaleY(0.78);
+  }
+
   .pill {
     position: relative;
     display: inline-flex;
@@ -282,7 +316,6 @@
     box-shadow:
       inset 0 0 0 1px color-mix(in srgb, var(--tone) 22%, transparent),
       var(--shadow-tile);
-    backdrop-filter: blur(var(--blur-tile));
 
     & > svg {
       flex: none;
@@ -324,56 +357,6 @@
     background: transparent;
     border: 1px dashed var(--color-ink-muted);
     box-shadow: none;
-  }
-  .pill-pulse::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    animation: halo 2.2s var(--ease-glass) infinite;
-  }
-}
-
-@keyframes halo {
-  0% {
-    box-shadow: 0 0 0 0 var(--color-danger);
-    opacity: 0.45;
-  }
-  100% {
-    box-shadow: 0 0 0 8px var(--color-danger);
-    opacity: 0;
-  }
-}
-
-@keyframes ping-soft {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  80%,
-  100% {
-    transform: scale(2.6);
-    opacity: 0;
-  }
-}
-
-/* Burbujas líquidas: respiran y sus puentes se estiran */
-@keyframes breathe {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.04);
-  }
-}
-@keyframes bridge {
-  0%,
-  100% {
-    transform: scaleY(0.85) scaleX(1);
-  }
-  50% {
-    transform: scaleY(1.15) scaleX(0.94);
   }
 }
 

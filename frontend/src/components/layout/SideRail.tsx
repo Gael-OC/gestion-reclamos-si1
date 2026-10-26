@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { NavLink } from 'react-router'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import {
   Bell,
   ChartColumn,
@@ -30,6 +30,7 @@ const NAV: NavItem[] = [
  */
 export function SideRail() {
   const id = useId()
+  const reduce = useReducedMotion()
 
   return (
     // El contenedor posiciona y eleva el riel (z-40) por encima de las islas,
@@ -38,7 +39,7 @@ export function SideRail() {
       <nav
         aria-label="Navegación principal"
         className={cn(
-          'glass-panel glass-island flex gap-2 rounded-full p-2 [--float-delay:-3s]',
+          'glass-panel flex gap-2 rounded-full p-2',
           'justify-around lg:flex-col lg:justify-start lg:gap-4 lg:px-2 lg:py-3',
         )}
       >
@@ -56,11 +57,15 @@ export function SideRail() {
                       <motion.span
                         layoutId={`rail-${id}`}
                         className="absolute inset-0 rounded-full bg-glass-strong shadow-tile ring-1 ring-glass-rim"
-                        transition={{
-                          type: 'spring',
-                          stiffness: 380,
-                          damping: 28,
-                        }}
+                        transition={
+                          reduce
+                            ? { duration: 0 }
+                            : {
+                                type: 'spring',
+                                stiffness: 380,
+                                damping: 28,
+                              }
+                        }
                       />
                     )}
                     <item.icon

@@ -11,7 +11,7 @@ export type IconButtonProps = Omit<
   label: string
   variant?: 'glass' | 'ghost'
   size?: 'sm' | 'md'
-  /** Punto rojo que late (notificaciones pendientes). */
+  /** Punto rojo estático (notificaciones pendientes). */
   badge?: boolean
 }
 
@@ -42,9 +42,10 @@ export function IconButton({
     >
       <Icon size={size === 'sm' ? 15 : 18} strokeWidth={1.6} aria-hidden />
       {badge && (
-        <span className="absolute top-1.5 right-2 size-2 rounded-full bg-danger shadow-[0_0_0_2px_var(--color-glass-strong)]">
-          <span className="absolute inset-0 animate-[ping-soft_1.8s_var(--ease-glass)_infinite] rounded-full bg-danger" />
-        </span>
+        <span
+          aria-hidden
+          className="absolute top-1.5 right-2 size-2 rounded-full bg-danger shadow-[0_0_0_2px_var(--color-glass-strong)]"
+        />
       )}
     </button>
   )

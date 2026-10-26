@@ -18,7 +18,7 @@ export function PlaceholderPage({
         fullScreen && 'min-h-dvh px-6 py-12',
       )}
     >
-      <Glass float enter={2} className="w-full max-w-xl">
+      <Glass className="w-full max-w-xl">
         <h1 className="text-display">{title}</h1>
         <p className="mt-2 text-ink-muted">Vista pendiente de diseño.</p>
         {fullScreen && (

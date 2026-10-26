@@ -1,5 +1,4 @@
 import { useId, type CSSProperties } from 'react'
-import { useCountUp } from '@/lib/useCountUp'
 import { cn } from '@/lib/cn'
 
 type Item = { label: string; value: number }
@@ -21,7 +20,6 @@ const stop = (color: string): CSSProperties => ({
 })
 
 function OrbLabel({ item, x, core }: { item: Item; x: number; core: boolean }) {
-  const value = useCountUp(item.value)
   const words = item.label.split(' ')
   // Etiquetas largas en dos líneas ("Esperando / empresa").
   const lines =
@@ -41,7 +39,7 @@ function OrbLabel({ item, x, core }: { item: Item; x: number; core: boolean }) {
         fontWeight={500}
         letterSpacing="-0.02em"
       >
-        {value}
+        {item.value.toLocaleString('es-CL')}
       </tspan>
       {lines.map((line, index) => (
         <tspan
@@ -60,8 +58,8 @@ function OrbLabel({ item, x, core }: { item: Item; x: number; core: boolean }) {
 }
 
 /**
- * Tres burbujas unidas por puentes de líquido que respiran (metaballs con un
- * filtro SVG). Muestra la distribución de los reclamos activos por etapa.
+ * Tres burbujas estáticas unidas por puentes. Muestra la distribución de los
+ * reclamos activos por etapa sin filtros ni animaciones permanentes.
  */
 export function LiquidOrbs({ items, className }: LiquidOrbsProps) {
   const id = useId().replaceAll(':', '')
@@ -77,16 +75,6 @@ export function LiquidOrbs({ items, className }: LiquidOrbsProps) {
       preserveAspectRatio="xMidYMid meet"
     >
       <defs>
-        <filter id={`${id}-goo`} x="-20%" y="-40%" width="140%" height="180%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-          <feColorMatrix
-            in="blur"
-            mode="matrix"
-            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -10"
-            result="goo"
-          />
-          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-        </filter>
         <radialGradient id={`${id}-side`} cx="35%" cy="30%" r="75%">
           <stop offset="0" style={stop('orb-perla')} />
           <stop offset="0.7" style={stop('sky-niebla')} />
@@ -103,21 +91,13 @@ export function LiquidOrbs({ items, className }: LiquidOrbsProps) {
         </linearGradient>
       </defs>
 
-      <g filter={`url(#${id}-goo)`}>
-        {[190, 370].map((cx, index) => (
-          <ellipse
-            key={cx}
-            cx={cx}
-            cy={CY}
-            rx={70}
-            ry={26}
+      <g>
+        {[false, true].map((mirrored) => (
+          <path
+            key={String(mirrored)}
+            d="M160 50 C182 85 185 85 211 40 L211 160 C185 115 182 115 160 150 Z"
+            transform={mirrored ? 'translate(560 0) scale(-1 1)' : undefined}
             fill={`url(#${id}-bridge)`}
-            className="animate-[bridge_4.5s_ease-in-out_infinite]"
-            style={{
-              transformBox: 'fill-box',
-              transformOrigin: 'center',
-              animationDelay: `${index * -2.2}s`,
-            }}
           />
         ))}
         {XS.map((x, index) => (
@@ -127,12 +107,6 @@ export function LiquidOrbs({ items, className }: LiquidOrbsProps) {
             cy={CY}
             r={RS[index]}
             fill={`url(#${id}-${index === 1 ? 'core' : 'side'})`}
-            className="animate-[breathe_6s_ease-in-out_infinite]"
-            style={{
-              transformBox: 'fill-box',
-              transformOrigin: 'center',
-              animationDelay: `${index * -2}s`,
-            }}
           />
         ))}
       </g>

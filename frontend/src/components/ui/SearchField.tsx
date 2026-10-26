@@ -20,7 +20,7 @@ export function SearchField({ label, className, ...rest }: SearchFieldProps) {
       />
       <input
         type="search"
-        className="h-11 w-full min-w-0 rounded-full border border-glass-rim bg-glass-tile pr-4 pl-10.5 text-body text-ink shadow-[inset_0_1px_3px_var(--color-glass-shade)] backdrop-blur-tile transition-shadow outline-none placeholder:text-ink-muted focus:shadow-focus-ring"
+        className="h-11 w-full min-w-0 rounded-full border border-glass-rim bg-glass-tile pr-4 pl-10.5 text-body text-ink shadow-[inset_0_1px_3px_var(--color-glass-shade)] transition-shadow outline-none placeholder:text-ink-muted focus:shadow-focus-ring"
         {...rest}
       />
     </label>

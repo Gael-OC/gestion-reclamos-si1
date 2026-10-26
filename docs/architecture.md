@@ -42,9 +42,9 @@ propuesto para los endpoints. Mantener esta documentación al día con los avanc
 
 Node.js 24 LTS; React 19, React Router 8, Vite 8, Tailwind CSS 4 y TypeScript 6.0.
 TypeScript se mantiene en 6.0 por compatibilidad con `typescript-eslint`.
-Para la propuesta de sistema de diseño (ver abajo) el frontend suma three.js,
-React Three Fiber y drei (fondo 3D), Motion (animaciones), NumberFlow (cifras
-animadas) y Lucide (íconos).
+Para la propuesta de sistema de diseño (ver abajo) el frontend usa Motion
+(transiciones de selección) y Lucide (íconos). El fondo decorativo usa CSS
+estático; no se cargan Three.js, React Three Fiber, drei ni NumberFlow.
 Backend con Python 3.12–3.14, FastAPI, Pydantic 2, SQLAlchemy 2.1,
 Psycopg 3 y Alembic. Compose utiliza PostgreSQL 18.
 Las versiones concretas quedan en `frontend/package-lock.json` y
@@ -65,12 +65,30 @@ y la [imagen oficial de PostgreSQL](https://hub.docker.com/_/postgres).
 - Definición, fuentes y actualización de los seis KPI; vistas y permisos de lectura.
 - Identidad visual y componentes comunes. **Propuesta en revisión:** sistema de
   diseño "islas de vidrio" (glassmorphism sobrio, solo tema claro) sobre un cielo
-  gris acero con objetos 3D translúcidos. Sus tokens están en
+  gris acero con formas estáticas translúcidas. Sus tokens están en
   `frontend/src/styles/global.css` (`@theme` de Tailwind y utilidades
-  `glass-shell`, `glass-panel`, `glass-tile`, `glass-strong`, `glass-island`).
-  Componentes iniciales: `components/layout/Backdrop` (escena 3D, carga diferida y
-  respaldo en CSS si no hay WebGL), `components/layout/AppShell` y
+  `glass-shell`, `glass-panel`, `glass-tile`, `glass-strong`).
+  Componentes iniciales: `components/layout/Backdrop` (decoración estática en CSS),
+  `components/layout/AppShell` y
   `components/ui/Glass`. Falta que el equipo la confirme.
 - Reparto de tareas entre los cinco integrantes y responsables de archivos compartidos.
   Propuesta inicial: Gael y Marianela trabajan los mockups del frontend; los otros
   tres integrantes acuerdan los módulos del backend antes de comenzar.
+
+## Ajuste de rendimiento aplicado
+
+Se reemplazó el fondo WebGL por círculos y un aro estáticos con degradados,
+bordes y sombras CSS. La identidad visual sigue siendo una propuesta pendiente
+de confirmación del equipo; el ajuste técnico evita renderizar decoración
+continuamente en todas las rutas.
+
+El desenfoque se limita a `glass-shell` y `glass-panel`, a 12 px. Los controles
+y etiquetas mantienen transparencia sin filtros. Se retiraron los vaivenes,
+pulsos y filtros SVG del panel, las entradas escalonadas y los contadores al
+montar. Cifras y gráficos se presentan directamente; se conservan transiciones
+breves para selección, hover y foco, respetando movimiento reducido.
+
+`Glass` recibe atributos HTML de `section`; ya no recibe propiedades de Motion
+ni `float`, `floatDelay` o `enter`. `TrendCard` tampoco recibe `enter`.
+Los contratos REST y el backend no cambian. La validación y sus límites se
+registran en [performance.md](performance.md).
