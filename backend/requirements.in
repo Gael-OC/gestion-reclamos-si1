@@ -6,6 +6,7 @@ pydantic-settings==2.16.1
 SQLAlchemy==2.1.6
 psycopg[binary]==3.3.6
 alembic==1.20.1
+PyJWT==2.15.0
 
 # Verificaciones locales: unittest pertenece a la biblioteca estándar de Python.
 httpx2==2.16.0

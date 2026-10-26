@@ -18,7 +18,9 @@ flowchart LR
 - **Aplicación — backend:** FastAPI y Pydantic exponen y validan la API.
   `api/v1/` agrupa routers, `schemas/` los contratos de entrada y salida,
   `services/` las reglas de negocio, `repositories/` el acceso a datos y
-  `models/` los modelos SQLAlchemy.
+  `models/` los modelos SQLAlchemy. **Propuesta:** `domain/` contiene las
+  entidades y enumeraciones que comparten servicios y repositorios, sin
+  depender de FastAPI ni de SQLAlchemy.
 - **Datos — PostgreSQL:** persistencia e integridad. SQLAlchemy prepara conexiones;
   Alembic administra los cambios del esquema junto con los modelos acordados.
 - **Analítica futura:** Power BI consultará PostgreSQL con una cuenta separada de
@@ -33,10 +35,45 @@ levanta PostgreSQL, publicado en `127.0.0.1`, con un volumen persistente.
 ## Punto de partida del desarrollo
 
 La estructura inicial incluye `/health`, que comprueba el proceso HTTP y funciona
-sin PostgreSQL; no indica disponibilidad de la base. Todavía no hay endpoints de
-negocio, tablas ni migraciones, y el frontend no realiza llamadas HTTP. El equipo
-incorporará estas piezas durante el desarrollo, utilizando `/api/v1` como prefijo
-propuesto para los endpoints. Mantener esta documentación al día con los avances.
+sin PostgreSQL; no indica disponibilidad de la base. Todavía no hay tablas ni
+migraciones, y el frontend no realiza llamadas HTTP. Mantener esta documentación
+al día con los avances.
+
+## Base del backend (propuesta)
+
+Endpoints de negocio bajo `/api/v1` para los servicios acordados: login, gestión
+de reclamos, asignación de funcionarios, seguimiento y control de plazos. El
+contrato, los roles, el flujo de estados y las reglas de plazo están en
+[api/README.md](api/README.md) y deben confirmarse con el equipo.
+
+```mermaid
+flowchart LR
+    R["api/v1: routers"] --> S["services: reglas de negocio"]
+    S --> I["repositories/base.py: interfaces"]
+    I --> M["memoria.py: datos demo (actual)"]
+    I -.-> Q["repositorios SQL + models (pendiente)"]
+    Q -.-> D[(PostgreSQL)]
+```
+
+- **Autenticación:** JWT firmado con HS256 (PyJWT) y enviado como
+  `Authorization: Bearer`. Contraseñas con scrypt de la biblioteca estándar.
+  Roles propuestos: administrador, supervisor y funcionario.
+- **Datos intercambiables:** los servicios dependen de las interfaces de
+  `repositories/base.py`. Hoy se usa la implementación en memoria con datos
+  ficticios (`ALMACENAMIENTO=memoria`), para que el frontend pueda integrarse
+  sin esperar la base. El equipo de BD implementa los repositorios SQL con sus
+  modelos y migraciones; el único punto que cambia es `get_repositorios` en
+  `api/deps.py`. La sesión por solicitud ya está en `db/session.get_db`.
+- **Reglas de negocio:** `services/flujo_estados.py` (transiciones),
+  `services/plazos.py` (cálculo puro de plazos), `services/permisos.py`
+  (acceso por rol). La fecha límite se guarda al registrar el reclamo.
+- **Trazabilidad:** cada creación, actualización, asignación, cambio de estado
+  y gestión agrega un evento de seguimiento, base para la vista de historial y
+  para los tiempos por etapa que pueda usar Power BI.
+- **Hora:** se guarda en UTC; los días de plazo se cuentan con la fecha local
+  de `America/Santiago` (`core/reloj.py`, reemplazable en las pruebas).
+- **Contrato:** `docs/api/openapi.json` se regenera con
+  `python -m scripts.exportar_openapi` para que el frontend genere tipos.
 
 ## Base técnica elegida
 
@@ -58,8 +95,11 @@ y la [imagen oficial de PostgreSQL](https://hub.docker.com/_/postgres).
 ## Propuestas pendientes de confirmar por el equipo
 
 - URLs provisionales de las vistas, prefijo `/api/v1`, formato de errores,
-  contratos JSON, campos, identificadores y mecanismo de autenticación.
-- Modelo de datos, roles, estados, reglas de plazos y asignación. No están definidos.
+  contratos JSON, campos, identificadores y mecanismo de autenticación. La
+  propuesta del backend está en [api/README.md](api/README.md).
+- Modelo de datos, roles, estados, reglas de plazos y asignación. El backend
+  propone roles, flujo de estados y plazos (20 días corridos, alerta a 3 días);
+  el modelo de datos sigue pendiente.
 - Acceso síncrono a PostgreSQL con Psycopg como punto de partida; revisar si una
   necesidad concreta justifica otro enfoque.
 - Definición, fuentes y actualización de los seis KPI; vistas y permisos de lectura.
