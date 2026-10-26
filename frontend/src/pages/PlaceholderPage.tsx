@@ -1,16 +1,33 @@
+import { Glass } from '@/components/ui/Glass'
+import { cn } from '@/lib/cn'
+
 type PlaceholderPageProps = {
   title: string
+  /** true fuera del layout interno (por ejemplo, el login). */
+  fullScreen?: boolean
 }
 
-export function PlaceholderPage({ title }: PlaceholderPageProps) {
+export function PlaceholderPage({
+  title,
+  fullScreen = false,
+}: PlaceholderPageProps) {
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-8">
-      <h1 className="text-2xl font-semibold">{title}</h1>
-      <p>Vista pendiente de diseño.</p>
-      <p className="text-muted text-sm">
-        Prototipo académico ficticio — UCN 2026. Sin relación institucional con
-        SERNAC.
-      </p>
-    </main>
+    <div
+      className={cn(
+        'grid flex-1 place-items-center',
+        fullScreen && 'min-h-dvh px-6 py-12',
+      )}
+    >
+      <Glass float enter={2} className="w-full max-w-xl">
+        <h1 className="text-display">{title}</h1>
+        <p className="mt-2 text-ink-muted">Vista pendiente de diseño.</p>
+        {fullScreen && (
+          <p className="mt-6 text-caption text-ink-muted">
+            Prototipo académico ficticio — UCN 2026. Sin relación institucional
+            con SERNAC.
+          </p>
+        )}
+      </Glass>
+    </div>
   )
 }

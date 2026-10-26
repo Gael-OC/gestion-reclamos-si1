@@ -10,7 +10,7 @@ como caso de estudio a SERNAC Coquimbo.
 
 ## Tecnologías utilizadas
 
-- Frontend: React, TypeScript, Vite, Tailwind CSS y React Router.
+- Frontend: React, TypeScript, Vite, Tailwind CSS y React Router; three.js con React Three Fiber y drei, Motion, NumberFlow y Lucide para la propuesta de sistema de diseño.
 - Backend: Python, FastAPI, Pydantic, SQLAlchemy y Alembic.
 - Base de datos: PostgreSQL 18 mediante Docker Compose local.
 - Analítica futura: Power BI con acceso de solo lectura.
@@ -87,20 +87,35 @@ npm ci
 npm run dev
 ```
 
-Abre [http://127.0.0.1:5173](http://127.0.0.1:5173). La raíz redirige a `/login`.
-Estas rutas solo muestran un título y un aviso de diseño pendiente:
+Abre [http://127.0.0.1:5173](http://127.0.0.1:5173). La raíz abre el panel
+(`/dashboard`), diseñado para escritorio: en pantallas de 1100 × 700 px o más
+cabe completo en la ventana, sin desplazamiento general. La tabla de atención
+puede desplazarse horizontalmente si el ancho disponible no alcanza para todas
+sus columnas. Las demás rutas muestran un título y un aviso de diseño pendiente:
+
+Si el puerto 5173 está ocupado, inicia Vite en otro puerto, por ejemplo:
+
+```bash
+npm run dev -- --port 5174
+```
+
+Abre entonces [http://127.0.0.1:5174](http://127.0.0.1:5174).
 
 | Ruta                   | Vista prevista                            |
 | ---------------------- | ----------------------------------------- |
 | `/login`               | Inicio de sesión                          |
-| `/dashboard`           | Panel principal                           |
+| `/dashboard`           | Panel principal (con datos de prueba)     |
 | `/reclamos`            | Listado de reclamos                       |
 | `/reclamos/nuevo`      | Registro de reclamo                       |
 | `/reclamos/:reclamoId` | Detalle; por ejemplo, `/reclamos/ejemplo` |
 | `/asignaciones`        | Asignaciones                              |
+| `/indicadores`         | Indicadores                               |
+| `/configuracion`       | Configuración                             |
 
-No hay formularios, autenticación ni llamadas a la API. Los estilos son
-provisionales para que Gael y Marianela puedan comenzar los mockups.
+No hay formularios, autenticación ni llamadas a la API. Los tokens de la
+propuesta de sistema de diseño están en `src/styles/global.css` y los componentes
+compartidos iniciales son `Glass` (`components/ui/`) y `Backdrop`
+(`components/layout/`); la propuesta aún debe confirmarla el equipo.
 Las variables `VITE_*` son públicas: nunca guardar secretos en el frontend.
 
 ### 4. Backend — en otra terminal, desde la raíz
@@ -185,6 +200,18 @@ hacer commit en esa rama y subirla. Para el ejemplo anterior:
 ```bash
 git push -u origin feat/mockup-login
 ```
+
+Si otra persona se suma a la misma tarea y acuerdan compartir su rama, después
+de que esté publicada puede obtenerla desde la raíz del repositorio así:
+
+```bash
+git fetch origin
+git switch --track origin/feat/nombre-de-la-tarea
+```
+
+Luego sigue los pasos de instalación y ejecución de esta guía. Antes de subir
+cambios, integrar los commits recientes de la rama con `git pull --ff-only` y
+coordinar el trabajo sobre los archivos compartidos.
 
 En GitHub, abrir un pull request desde esa rama hacia `main`, completar la
 plantilla y pedir revisión a otro integrante. Fusionar cuando esté revisado y

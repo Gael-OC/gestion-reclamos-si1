@@ -1,19 +1,388 @@
 @import 'tailwindcss';
 
-/* Tokens provisionales: el equipo debe acordar la identidad visual. */
-@theme {
-  --font-sans: system-ui, sans-serif;
-  --color-surface: #ffffff;
-  --color-content: #1f2937;
-  --color-muted: #4b5563;
+/*
+ * Sistema de diseño "Gestión de Reclamos" (propuesta en revisión por el equipo).
+ * Islas de vidrio sobre un cielo gris acero con objetos 3D translúcidos.
+ * Fuente de verdad: los tokens publicados del sistema de diseño; si cambian allá,
+ * actualizar aquí. Solo tema claro.
+ */
+@theme static {
+  /* Solo existen los colores del sistema: nada de la paleta por defecto. */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Cielo (solo fondo) */
+  --color-sky-acero: #c9d3e3;
+  --color-sky-niebla: #eef1f6;
+  --color-sky-perla: #e6e5ec;
+  --color-sky-hielo: #dbe5f0;
+
+  /* Objetos 3D y burbujas (decorativos) */
+  --color-orb-marino: #2c3e66;
+  --color-orb-marino-deep: #1e2b4a;
+  --color-orb-acero: #5b7398;
+  --color-orb-acero-deep: #3d5274;
+  --color-orb-pizarra: #8a96ab;
+  --color-orb-pizarra-deep: #5f6a80;
+  --color-orb-perla: #f4f6fa;
+
+  /* Vidrio */
+  --color-glass-shell: #ffffff38;
+  --color-glass-panel: #ffffff80;
+  --color-glass-tile: #ffffff94;
+  --color-glass-strong: #ffffffd1;
+  --color-glass-rim: #ffffffa6;
+  --color-glass-shine: #ffffffe6;
+  --color-glass-shade: #2b3a551a;
+
+  /* Tinta */
+  --color-ink: #12172a;
+  --color-ink-soft: #263048;
+  --color-ink-muted: #3c4556;
+  --color-on-ink: #ffffff;
+
+  /* Acción y estados */
+  --color-brand: #24489a;
+  --color-brand-glow: #5b7bc4;
+  --color-brand-mist: #e8eef7;
+  --color-brand-soft: #e1e8f3eb;
+  --color-success: #0b6e63;
+  --color-warning: #8f4307;
+  --color-danger: #b42318;
+
+  /* Gráficos */
+  --color-data-azul: #2f5aa8;
+  --color-data-acero: #7b8fb0;
+  --color-data-granate: #a3364a;
+  --color-data-teal: #2f8a8a;
+
+  --color-scrim: #12172a33;
+
+  /* Tipografía: Geist (cargada en index.html) */
+  --font-sans: Geist, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+
+  --text-hero-number: 44px;
+  --text-hero-number--line-height: 48px;
+  --text-hero-number--font-weight: 300;
+  --text-hero-number--letter-spacing: -0.03em;
+  --text-display: 28px;
+  --text-display--line-height: 34px;
+  --text-display--font-weight: 500;
+  --text-display--letter-spacing: -0.02em;
+  --text-metric: 30px;
+  --text-metric--line-height: 34px;
+  --text-metric--font-weight: 400;
+  --text-metric--letter-spacing: -0.02em;
+  --text-title: 17px;
+  --text-title--line-height: 24px;
+  --text-title--font-weight: 500;
+  --text-body: 14px;
+  --text-body--line-height: 21px;
+  --text-body--font-weight: 400;
+  --text-label: 13px;
+  --text-label--line-height: 18px;
+  --text-label--font-weight: 500;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--font-weight: 400;
+  --text-axis: 10px;
+  --text-axis--line-height: 14px;
+  --text-axis--font-weight: 500;
+  --text-axis--letter-spacing: 0.06em;
+  --text-id: 12px;
+  --text-id--line-height: 18px;
+  --text-id--font-weight: 500;
+
+  /* Espaciado: base 4px de Tailwind (space-6 = 24px entre islas). */
+
+  /* Radios de cristal pulido, anidados */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 36px;
+
+  /* Sombras: brillo especular arriba + caída azul pizarra */
+  --shadow-*: initial;
+  --shadow-shell:
+    inset 0 1px 0 #ffffffe6, inset 0 0 0 1px #ffffff4d,
+    0 40px 80px -30px #2b3a5566;
+  --shadow-island:
+    inset 0 1px 0 #ffffffe6, inset 0 0 0 1px #ffffff40,
+    0 10px 20px -12px #2b3a5540, 0 36px 64px -28px #2b3a5580;
+  --shadow-panel:
+    inset 0 1px 0 #ffffffd9, inset 0 -1px 0 #ffffff33,
+    0 18px 40px -18px #2b3a554d;
+  --shadow-tile: inset 0 1px 0 #ffffffe6, 0 8px 18px -10px #2b3a554d;
+  --shadow-lift: inset 0 1px 0 #ffffff, 0 24px 48px -16px #2b3a5573;
+  --shadow-ink: inset 0 1px 0 #ffffff2e, 0 10px 22px -10px #12172a99;
+  --shadow-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #24489a;
+
+  /* Desenfoque del fondo por nivel de vidrio (backdrop-blur-*) */
+  --blur-shell: 40px;
+  --blur-panel: 24px;
+  --blur-tile: 14px;
+
+  /* Movimiento */
+  --ease-glass: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-island: island 9s ease-in-out infinite;
+
+  @keyframes island {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -6px;
+    }
+  }
 }
 
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
   body {
     margin: 0;
     min-width: 320px;
-    background: var(--color-surface);
-    color: var(--color-content);
+    min-height: 100vh;
+    color: var(--color-ink);
     font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--color-sky-niebla);
+    background-image:
+      radial-gradient(
+        60% 70% at 100% 0%,
+        var(--color-sky-hielo),
+        transparent 70%
+      ),
+      radial-gradient(
+        55% 60% at 0% 100%,
+        var(--color-sky-perla),
+        transparent 70%
+      ),
+      linear-gradient(
+        140deg,
+        var(--color-sky-acero) 0%,
+        var(--color-sky-niebla) 58%,
+        var(--color-sky-niebla) 100%
+      );
+    background-attachment: fixed;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus-ring);
+  }
+}
+
+/*
+ * Niveles de vidrio. Se usan a través del componente <Glass>, pero también
+ * como utilidades sueltas (por ejemplo, "glass-tile rounded-md p-3").
+ */
+@utility glass-base {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--color-glass-rim);
+  color: var(--color-ink);
+  backdrop-filter: blur(var(--blur-panel)) saturate(180%);
+
+  /* Brillo especular arriba a la izquierda */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      165deg,
+      var(--color-glass-shine) 0%,
+      transparent 32%
+    );
+    opacity: 0.45;
+  }
+}
+
+@utility glass-shell {
+  @apply glass-base;
+  background-color: var(--color-glass-shell);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-shell);
+  backdrop-filter: blur(var(--blur-shell)) saturate(180%);
+}
+
+@utility glass-panel {
+  @apply glass-base;
+  background-color: var(--color-glass-panel);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+}
+
+@utility glass-tile {
+  @apply glass-base;
+  background-color: var(--color-glass-tile);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-tile);
+  backdrop-filter: blur(var(--blur-tile)) saturate(180%);
+}
+
+@utility glass-strong {
+  @apply glass-base;
+  background-color: var(--color-glass-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-tile);
+  backdrop-filter: blur(var(--blur-tile)) saturate(180%);
+}
+
+/* Isla flotante: vaivén lento y sombra más profunda */
+@utility glass-island {
+  box-shadow: var(--shadow-island);
+  animation: var(--animate-island);
+  animation-delay: var(--float-delay, 0s);
+}
+
+/*
+ * "tall": escritorio con alto suficiente para que el panel quepa completo en la
+ * ventana, sin barra de scroll. En pantallas más bajas o angostas el contenido
+ * se apila y la página se desplaza normalmente.
+ */
+@custom-variant tall (@media (min-width: 1100px) and (min-height: 700px));
+/* "compact": escritorio bajo (laptops de 720–860 px de alto): menos aire. */
+@custom-variant compact (@media (min-width: 1100px) and (max-height: 860px));
+
+/* Píldoras de estado: vidrio con el tono solo en el ícono y en el borde */
+@layer components {
+  .pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 26px;
+    padding: 0 11px 0 9px;
+    border-radius: 9999px;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--color-ink);
+    border: 1px solid var(--color-glass-rim);
+    background:
+      radial-gradient(
+        120% 160% at 0% 50%,
+        color-mix(in srgb, var(--tone) 13%, transparent),
+        transparent 62%
+      ),
+      var(--color-glass-strong);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--tone) 22%, transparent),
+      var(--shadow-tile);
+    backdrop-filter: blur(var(--blur-tile));
+
+    & > svg {
+      flex: none;
+      color: var(--tone);
+    }
+  }
+  .pill-neutral {
+    --tone: var(--color-ink-muted);
+    color: var(--color-ink-muted);
+  }
+  .pill-brand {
+    --tone: var(--color-brand);
+  }
+  .pill-success {
+    --tone: var(--color-success);
+  }
+  .pill-warning {
+    --tone: var(--color-warning);
+  }
+  .pill-danger {
+    --tone: var(--color-danger);
+  }
+  .pill-filled {
+    --tone: var(--color-on-ink);
+    color: var(--color-on-ink);
+    border-color: transparent;
+    background: linear-gradient(
+      180deg,
+      var(--color-brand-glow) -40%,
+      var(--color-brand) 70%
+    );
+    box-shadow:
+      inset 0 1px 0 var(--color-glass-rim),
+      0 6px 14px -6px var(--color-brand);
+  }
+  .pill-muted {
+    --tone: var(--color-ink-muted);
+    color: var(--color-ink-muted);
+    background: transparent;
+    border: 1px dashed var(--color-ink-muted);
+    box-shadow: none;
+  }
+  .pill-pulse::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    animation: halo 2.2s var(--ease-glass) infinite;
+  }
+}
+
+@keyframes halo {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-danger);
+    opacity: 0.45;
+  }
+  100% {
+    box-shadow: 0 0 0 8px var(--color-danger);
+    opacity: 0;
+  }
+}
+
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Burbujas líquidas: respiran y sus puentes se estiran */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+@keyframes bridge {
+  0%,
+  100% {
+    transform: scaleY(0.85) scaleX(1);
+  }
+  50% {
+    transform: scaleY(1.15) scaleX(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 }
