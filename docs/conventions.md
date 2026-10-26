@@ -45,6 +45,11 @@ Flujo habitual: acordar una tarea → crear una rama → trabajar en el área ac
 - Pedir revisión a otro integrante y completar las verificaciones aplicables
   antes de fusionar. Después de integrar, eliminar la rama desde GitHub y crear
   otra desde `main` actualizado para la siguiente tarea.
+- Si dos integrantes acuerdan colaborar en la misma tarea, pueden trabajar sobre
+  una única rama publicada. Quien se sume la obtiene con `git fetch origin` y
+  `git switch --track origin/feat/nombre-de-la-tarea`; antes de subir sus cambios,
+  integra el avance remoto con `git pull --ff-only` y coordina los archivos que
+  modificará.
 - Se recomienda proteger `main` en GitHub exigiendo pull request y una aprobación.
   Esta configuración queda pendiente de realizar manualmente por el equipo.
 - Ejecutar las verificaciones del README antes de pedir revisión. No incluir

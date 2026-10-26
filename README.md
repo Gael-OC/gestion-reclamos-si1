@@ -10,7 +10,7 @@ como caso de estudio a SERNAC Coquimbo.
 
 ## Tecnologías utilizadas
 
-- Frontend: React, TypeScript, Vite, Tailwind CSS y React Router.
+- Frontend: React, TypeScript, Vite, Tailwind CSS y React Router; Motion para las transiciones de selección y Lucide para los íconos de la propuesta de sistema de diseño.
 - Backend: Python, FastAPI, Pydantic, SQLAlchemy y Alembic.
 - Base de datos: PostgreSQL 18 mediante Docker Compose local.
 - Analítica futura: Power BI con acceso de solo lectura.
@@ -87,20 +87,71 @@ npm ci
 npm run dev
 ```
 
-Abre [http://127.0.0.1:5173](http://127.0.0.1:5173). La raíz redirige a `/login`.
-Estas rutas solo muestran un título y un aviso de diseño pendiente:
+Abre [http://127.0.0.1:5173](http://127.0.0.1:5173). La raíz abre el panel
+(`/dashboard`), diseñado para escritorio: en pantallas de 1100 × 700 px o más
+cabe completo en la ventana, sin desplazamiento general (en 1100 × 700 px la
+tercera fila de la tabla de atención queda tras un desplazamiento interno).
+La tipografía parte de 13 px para el contenido y crece un 10 %, 20 % o 50 % en
+pantallas desde 1500, 1800 y 2400 px de ancho. La tabla de atención
+puede desplazarse horizontalmente si el ancho disponible no alcanza para todas
+sus columnas. Indicadores también cuenta con dos vistas de mockup para los seis
+KPI. Las demás rutas muestran un título y un aviso de diseño pendiente:
 
-| Ruta                   | Vista prevista                            |
-| ---------------------- | ----------------------------------------- |
-| `/login`               | Inicio de sesión                          |
-| `/dashboard`           | Panel principal                           |
-| `/reclamos`            | Listado de reclamos                       |
-| `/reclamos/nuevo`      | Registro de reclamo                       |
-| `/reclamos/:reclamoId` | Detalle; por ejemplo, `/reclamos/ejemplo` |
-| `/asignaciones`        | Asignaciones                              |
+Si el puerto 5173 está ocupado, inicia Vite en otro puerto, por ejemplo:
 
-No hay formularios, autenticación ni llamadas a la API. Los estilos son
-provisionales para que Gael y Marianela puedan comenzar los mockups.
+```bash
+npm run dev -- --port 5174
+```
+
+Abre entonces [http://127.0.0.1:5174](http://127.0.0.1:5174).
+
+| Ruta                             | Vista prevista                                       |
+| -------------------------------- | ---------------------------------------------------- |
+| `/login`                         | Inicio de sesión                                     |
+| `/dashboard`                     | Panel principal (con datos de prueba)                |
+| `/reclamos`                      | Listado de reclamos                                  |
+| `/reclamos/nuevo`                | Registro de reclamo                                  |
+| `/reclamos/:reclamoId`           | Detalle; por ejemplo, `/reclamos/ejemplo`            |
+| `/asignaciones`                  | Asignaciones                                         |
+| `/indicadores`                   | KPI de plazos y resolución (datos de prueba)         |
+| `/indicadores?vista=seguimiento` | KPI de pendientes, carga y alertas (datos de prueba) |
+| `/configuracion`                 | Configuración                                        |
+
+### Capturas de los mockups para la presentación
+
+Las tres composiciones conservan el diseño de islas de vidrio y usan un escenario
+fijo de datos ficticios. Para las capturas, abrir estas direcciones en una ventana
+de 1280 × 720 px o mayor (también se adaptan a pantallas pequeñas):
+
+- `/dashboard`: resumen operativo de los seis KPI, distribución agrupada de
+  pendientes, carga por funcionario y muestra de alertas; los tiles de KPI 4 y
+  KPI 6 filtran la muestra.
+- `/indicadores`: KPI 1 y 3, tendencias de mayo a septiembre de 2026, base de
+  cierres y cierres por mes. El período seleccionado es septiembre de 2026.
+- `/indicadores?vista=seguimiento`: KPI 2, 4, 5 y 6, con los cinco estados
+  activos, carga por responsable y muestras de casos. La fecha de corte es el
+  26 de octubre de 2026.
+
+Los 342 activos incluyen 294 asignados y 48 sin asignar. Los 28 próximos a vencer
+(0–3 días, incluido hoy) y 19 vencidos son subconjuntos de esos activos. Los
+listados son extractos identificados como muestras, no todos los casos contados.
+El mes tiene 200 cierres: 174 en plazo (87 %) y 26 fuera de plazo; 3.280 días
+acumulados de resolución dan un promedio de 16,4 días. Se excluyen anulados.
+Estos valores describen el prototipo y no el desempeño real de SERNAC.
+
+La vista Indicadores es una propuesta visual para la futura presentación en
+Power BI; todavía no existe un informe conectado o incrustado. Las reglas y los
+contratos reales se acordarán con backend y analítica; estas pantallas solo
+presentan respuestas de ejemplo y filtran sus muestras locales.
+
+No hay formularios, autenticación ni llamadas a la API. Los tokens de la
+propuesta de sistema de diseño están en `src/styles/global.css` y los componentes
+compartidos iniciales son `Glass` (`components/ui/`) y `Backdrop`
+(`components/layout/`); la propuesta aún debe confirmarla el equipo.
+El fondo usa formas estáticas en CSS, sin WebGL. Los paneles principales tienen
+desenfoque de 12 px; controles y etiquetas usan fondos translúcidos sin desenfoque.
+Cifras y gráficos se muestran completos al cargar. Solo las interacciones tienen
+transiciones breves, respetando la preferencia de movimiento reducido.
 Las variables `VITE_*` son públicas: nunca guardar secretos en el frontend.
 
 ### 4. Backend — en otra terminal, desde la raíz
@@ -131,7 +182,8 @@ npm run check
 npm run build
 ```
 
-`check` verifica TypeScript, ESLint y el formato. Para aplicar formato:
+`check` verifica TypeScript, ESLint, el formato y la coherencia de las cifras
+ficticias de los seis KPI. Para aplicar formato:
 `npm run format`. Para revisar la compilación local: `npm run preview`.
 
 Desde `backend/`, con el entorno virtual activo:
@@ -186,6 +238,18 @@ hacer commit en esa rama y subirla. Para el ejemplo anterior:
 git push -u origin feat/mockup-login
 ```
 
+Si otra persona se suma a la misma tarea y acuerdan compartir su rama, después
+de que esté publicada puede obtenerla desde la raíz del repositorio así:
+
+```bash
+git fetch origin
+git switch --track origin/feat/nombre-de-la-tarea
+```
+
+Luego sigue los pasos de instalación y ejecución de esta guía. Antes de subir
+cambios, integrar los commits recientes de la rama con `git pull --ff-only` y
+coordinar el trabajo sobre los archivos compartidos.
+
 En GitHub, abrir un pull request desde esa rama hacia `main`, completar la
 plantilla y pedir revisión a otro integrante. Fusionar cuando esté revisado y
 las verificaciones pasen; después eliminar la rama desde GitHub.
@@ -197,8 +261,9 @@ conflictos. Las reglas y los pasos para actualizar una rama están en
 
 ## Estado actual del desarrollo
 
-El repositorio parte de una estructura inicial: seis vistas provisionales, `/health`,
-configuración de PostgreSQL y Alembic, verificaciones y documentación.
+El repositorio incluye el panel operativo y dos composiciones de indicadores con
+datos de prueba; las otras vistas siguen siendo provisionales. También incluye
+`/health`, configuración de PostgreSQL y Alembic, verificaciones y documentación.
 
 El desarrollo del proyecto contempla la gestión de usuarios y roles, registro y seguimiento de
 reclamos, asignaciones, gestiones, estados, control de plazos y seis KPI en
