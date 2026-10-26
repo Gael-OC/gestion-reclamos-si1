@@ -11,6 +11,7 @@ import { TrendCard } from '@/features/dashboard/TrendCard'
 import { WorkloadChart } from '@/features/dashboard/WorkloadChart'
 import { PageHeading } from '@/components/layout/PageHeading'
 import { enDias, enPorcentaje } from '@/lib/format'
+import { useReclamosDemo } from '@/features/reclamos/demo/context'
 import {
   alertasPlazo,
   corte,
@@ -18,9 +19,7 @@ import {
   mesAnterior,
   meses,
   periodo,
-  reclamosActivos,
   requierenAtencion,
-  resumenCarga,
   tiempoResolucion,
   type ReclamoAtencion,
 } from '@/features/dashboard/mockData'
@@ -63,6 +62,7 @@ type Filtro = 'todos' | 'proximos' | 'vencidos'
 
 /** Resumen de los seis KPI; las dos vistas de Indicadores amplían el detalle. */
 export function DashboardPage() {
+  const { activos: reclamosActivos, resumenCarga } = useReclamosDemo()
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [selected, setSelected] = useState('R-2026-004812')
   const [etapa1, etapa2, etapa3] = reclamosActivos.etapas
@@ -106,6 +106,12 @@ export function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-col items-start gap-2">
+              <Link
+                to="/reclamos"
+                className="pill pill-neutral hover:bg-glass-strong"
+              >
+                Ver listado <ArrowUpRight size={14} aria-hidden />
+              </Link>
               <Link
                 to="/indicadores?vista=seguimiento"
                 className="pill pill-neutral hover:bg-glass-strong"
@@ -160,7 +166,16 @@ export function DashboardPage() {
 
         <Glass className="flex min-h-[280px] flex-col md:col-span-2 lg:col-span-2 tall:min-h-0 compact:p-4">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <h2 className="text-title">Requieren atención</h2>
+            <h2 className="text-title">
+              <Link
+                to={`/reclamos?orden=urgentes${filtro === 'todos' ? '' : `&atencion=${filtro === 'proximos' ? 'por_vencer' : 'vencidos'}`}`}
+                title="Ver listado de alertas"
+                className="underline-offset-4 hover:underline"
+              >
+                Requieren atención{' '}
+                <ArrowUpRight className="inline" size={14} aria-hidden />
+              </Link>
+            </h2>
             <SegmentedControl
               label="Filtrar alertas"
               value={filtro}

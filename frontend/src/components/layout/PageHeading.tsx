@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 type PageHeadingProps = {
   title: string
-  subtitle: string
+  subtitle?: string
   action?: ReactNode
 }
 
@@ -13,7 +13,7 @@ export function PageHeading({ title, subtitle, action }: PageHeadingProps) {
         <h1 className="text-display compact:text-[1.625rem] compact:leading-8">
           {title}
         </h1>
-        <p className="text-caption text-ink-muted">{subtitle}</p>
+        {subtitle && <p className="text-caption text-ink-muted">{subtitle}</p>}
       </div>
       {action}
     </header>
