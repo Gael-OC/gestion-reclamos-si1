@@ -16,9 +16,6 @@ export function TopBar() {
   return (
     <Glass
       role="banner"
-      float
-      enter={1}
-      floatDelay={-1}
       padding="none"
       className="flex shrink-0 items-center gap-3 rounded-full py-2 pr-2 pl-5 sm:gap-4 sm:pl-7"
     >

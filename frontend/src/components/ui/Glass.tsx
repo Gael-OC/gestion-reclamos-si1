@@ -1,5 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
-import { motion, useReducedMotion, type HTMLMotionProps } from 'motion/react'
+import type { HTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 type GlassLevel = 'shell' | 'panel' | 'tile' | 'strong'
@@ -26,16 +25,10 @@ const paddingClass: Record<GlassPadding, string> = {
   lg: 'p-8',
 }
 
-export type GlassProps = Omit<HTMLMotionProps<'section'>, 'title'> & {
+export type GlassProps = Omit<HTMLAttributes<HTMLElement>, 'title'> & {
   /** shell 22 %, panel 42–50 % (por defecto), tile 58 %, strong 82 %. */
   level?: GlassLevel
-  /** Isla flotante: vaivén lento de 6px y sombra más profunda. */
-  float?: boolean
-  /** Desfase del vaivén en segundos; por defecto depende de `enter`. */
-  floatDelay?: number
-  /** Índice de entrada escalonada (80 ms por índice). Omitir: sin animación de entrada. */
-  enter?: number
-  /** Se eleva con resorte al pasar el cursor. */
+  /** Se eleva brevemente al pasar el cursor, salvo con movimiento reducido. */
   interactive?: boolean
   padding?: GlassPadding
   title?: ReactNode
@@ -51,49 +44,25 @@ export type GlassProps = Omit<HTMLMotionProps<'section'>, 'title'> & {
  */
 export function Glass({
   level = 'panel',
-  float = false,
-  floatDelay,
-  enter,
   interactive = false,
   padding,
   title,
   subtitle,
   action,
   className,
-  style,
   children,
   ...rest
 }: GlassProps) {
-  const reduce = useReducedMotion()
-  const animateIn = enter !== undefined && !reduce
-  const delay = floatDelay ?? -(enter ?? 0) * 1.3
-
   return (
-    <motion.section
+    <section
       {...rest}
       className={cn(
         levelClass[level],
         paddingClass[padding ?? defaultPadding[level]],
-        float && 'glass-island',
-        interactive && 'cursor-pointer',
+        interactive &&
+          'cursor-pointer transition-transform duration-200 motion-safe:hover:-translate-y-1',
         className,
       )}
-      style={{ ...style, '--float-delay': `${delay}s` } as CSSProperties}
-      initial={animateIn ? { opacity: 0, y: 16, scale: 0.98 } : false}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.7,
-        ease: [0.22, 1, 0.36, 1],
-        delay: (enter ?? 0) * 0.08,
-      }}
-      whileHover={
-        interactive && !reduce
-          ? {
-              y: -4,
-              transition: { type: 'spring', stiffness: 380, damping: 26 },
-            }
-          : undefined
-      }
       tabIndex={interactive ? 0 : rest.tabIndex}
     >
       {(title || action) && (
@@ -108,6 +77,6 @@ export function Glass({
         </header>
       )}
       {children}
-    </motion.section>
+    </section>
   )
 }

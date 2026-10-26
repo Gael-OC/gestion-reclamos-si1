@@ -8,8 +8,7 @@ type ButtonSize = 'sm' | 'md'
 const variantClass: Record<ButtonVariant, string> = {
   // Acción principal: píldora negra, una por vista.
   ink: 'bg-ink text-on-ink shadow-ink hover:bg-ink-soft',
-  glass:
-    'glass-tile rounded-full hover:bg-glass-strong hover:shadow-lift backdrop-blur-tile',
+  glass: 'glass-tile rounded-full hover:bg-glass-strong hover:shadow-lift',
   ghost: 'text-ink hover:bg-glass-tile',
 }
 

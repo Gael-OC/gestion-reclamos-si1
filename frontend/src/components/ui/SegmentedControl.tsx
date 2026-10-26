@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { cn } from '@/lib/cn'
 
 export type SegmentedOption<T extends string> = { value: T; label: string }
@@ -22,6 +22,7 @@ export function SegmentedControl<T extends string>({
   className,
 }: SegmentedControlProps<T>) {
   const id = useId()
+  const reduce = useReducedMotion()
   return (
     <div
       role="tablist"
@@ -49,7 +50,11 @@ export function SegmentedControl<T extends string>({
               <motion.span
                 layoutId={`seg-${id}`}
                 className="absolute inset-0 rounded-full bg-glass-strong shadow-tile ring-1 ring-glass-rim"
-                transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                transition={
+                  reduce
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 420, damping: 30 }
+                }
               />
             )}
             <span className="relative">{option.label}</span>
