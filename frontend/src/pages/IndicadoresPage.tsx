@@ -10,6 +10,7 @@ import { DeadlineCard } from '@/features/indicadores/DeadlineCard'
 import { CierresPorMes } from '@/features/indicadores/CierresPorMes'
 import { cn } from '@/lib/cn'
 import { enDias, enPorcentaje } from '@/lib/format'
+import { useReclamosDemo } from '@/features/reclamos/demo/context'
 import {
   cierresPeriodo,
   corte,
@@ -17,8 +18,6 @@ import {
   mesAnterior,
   meses,
   periodo,
-  reclamosActivos,
-  resumenCarga,
   tiempoResolucion,
 } from '@/features/dashboard/mockData'
 
@@ -26,6 +25,7 @@ const { total, enPlazo, fueraDePlazo, diasAcumulados } = cierresPeriodo
 
 /** Propuesta visual para los seis KPI comprometidos para Power BI. */
 export function IndicadoresPage() {
+  const { activos: reclamosActivos, resumenCarga } = useReclamosDemo()
   const [params, setParams] = useSearchParams()
   const vista = params.get('vista') === 'seguimiento' ? 'seguimiento' : 'plazos'
 

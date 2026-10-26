@@ -1,7 +1,7 @@
-import { Plus } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router'
 import { Glass } from '@/components/ui/Glass'
 import { Button } from '@/components/ui/Button'
-import { SearchField } from '@/components/ui/SearchField'
 
 const today = new Intl.DateTimeFormat('es-CL', {
   day: '2-digit',
@@ -11,8 +11,9 @@ const today = new Intl.DateTimeFormat('es-CL', {
   .format(new Date())
   .replaceAll('/', '-')
 
-/** Barra superior en píldora: marca, buscador, fecha y la acción principal. */
 export function TopBar() {
+  const navigate = useNavigate()
+  const nuevoReclamo = useLocation().pathname === '/reclamos/nuevo'
   return (
     <Glass
       role="banner"
@@ -23,16 +24,18 @@ export function TopBar() {
         Gestión de Reclamos
       </span>
       <div className="flex-1" />
-      <SearchField
-        label="Buscar reclamos"
-        placeholder="Buscar reclamo"
-        className="hidden w-56 md:flex xl:w-72"
-      />
       <span className="pill pill-neutral hidden h-11 px-4 font-mono text-id sm:inline-flex">
         {today}
       </span>
-      <Button variant="ink" icon={Plus} aria-label="Nuevo reclamo">
-        <span className="hidden sm:inline">Nuevo reclamo</span>
+      <Button
+        variant={nuevoReclamo ? 'glass' : 'ink'}
+        icon={nuevoReclamo ? ArrowLeft : Plus}
+        aria-label={nuevoReclamo ? 'Volver al listado' : 'Nuevo reclamo'}
+        onClick={() => navigate(nuevoReclamo ? '/reclamos' : '/reclamos/nuevo')}
+      >
+        <span className="hidden sm:inline">
+          {nuevoReclamo ? 'Volver al listado' : 'Nuevo reclamo'}
+        </span>
       </Button>
     </Glass>
   )
