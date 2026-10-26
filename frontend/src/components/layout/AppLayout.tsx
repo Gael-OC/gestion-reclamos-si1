@@ -16,10 +16,6 @@ export function AppLayout() {
         <main className="flex min-h-0 flex-1 flex-col">
           <Outlet />
         </main>
-        <p className="shrink-0 text-center text-caption text-ink-muted">
-          Prototipo académico ficticio — UCN 2026. No es una plataforma oficial
-          ni tiene relación institucional con SERNAC. Datos de prueba.
-        </p>
       </div>
     </div>
   )

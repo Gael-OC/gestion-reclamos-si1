@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AppShell } from '@/components/layout/AppShell'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { IndicadoresPage } from '@/pages/IndicadoresPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 
 export function AppRouter() {
@@ -32,10 +33,7 @@ export function AppRouter() {
               path="/asignaciones"
               element={<PlaceholderPage title="Asignaciones" />}
             />
-            <Route
-              path="/indicadores"
-              element={<PlaceholderPage title="Indicadores" />}
-            />
+            <Route path="/indicadores" element={<IndicadoresPage />} />
             <Route
               path="/configuracion"
               element={<PlaceholderPage title="Configuración" />}

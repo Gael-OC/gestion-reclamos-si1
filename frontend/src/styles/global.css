@@ -63,36 +63,37 @@
   --font-sans: Geist, ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
 
-  --text-hero-number: 44px;
-  --text-hero-number--line-height: 48px;
+  /* Piso de lectura: ningún texto baja de 11px (ejes) ni de 13px (contenido). */
+  --text-hero-number: 3rem;
+  --text-hero-number--line-height: 3.25rem;
   --text-hero-number--font-weight: 300;
   --text-hero-number--letter-spacing: -0.03em;
-  --text-display: 28px;
-  --text-display--line-height: 34px;
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.25rem;
   --text-display--font-weight: 500;
   --text-display--letter-spacing: -0.02em;
-  --text-metric: 30px;
-  --text-metric--line-height: 34px;
+  --text-metric: 2.125rem;
+  --text-metric--line-height: 2.375rem;
   --text-metric--font-weight: 400;
   --text-metric--letter-spacing: -0.02em;
-  --text-title: 17px;
-  --text-title--line-height: 24px;
+  --text-title: 1.125rem;
+  --text-title--line-height: 1.5rem;
   --text-title--font-weight: 500;
-  --text-body: 14px;
-  --text-body--line-height: 21px;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.375rem;
   --text-body--font-weight: 400;
-  --text-label: 13px;
-  --text-label--line-height: 18px;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.25rem;
   --text-label--font-weight: 500;
-  --text-caption: 12px;
-  --text-caption--line-height: 16px;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.125rem;
   --text-caption--font-weight: 400;
-  --text-axis: 10px;
-  --text-axis--line-height: 14px;
+  --text-axis: 0.6875rem;
+  --text-axis--line-height: 0.875rem;
   --text-axis--font-weight: 500;
   --text-axis--letter-spacing: 0.06em;
-  --text-id: 12px;
-  --text-id--line-height: 18px;
+  --text-id: 0.8125rem;
+  --text-id--line-height: 1.125rem;
   --text-id--font-weight: 500;
 
   /* Espaciado: base 4px de Tailwind (space-6 = 24px entre islas). */
@@ -130,6 +131,26 @@
 @layer base {
   html {
     color-scheme: light;
+  }
+
+  /*
+   * Pantallas grandes: la escala completa (tipografía y espaciado, todo en rem)
+   * crece un 10–50 %, y solo si el alto alcanza para que el panel siga cabiendo.
+   */
+  @media (min-width: 1500px) and (min-height: 840px) {
+    html {
+      font-size: 110%;
+    }
+  }
+  @media (min-width: 1800px) and (min-height: 1000px) {
+    html {
+      font-size: 120%;
+    }
+  }
+  @media (min-width: 2400px) and (min-height: 1300px) {
+    html {
+      font-size: 150%;
+    }
   }
 
   body {
@@ -231,8 +252,12 @@
  * se apila y la página se desplaza normalmente.
  */
 @custom-variant tall (@media (min-width: 1100px) and (min-height: 700px));
-/* "compact": escritorio bajo (laptops de 720–860 px de alto): menos aire. */
-@custom-variant compact (@media (min-width: 1100px) and (max-height: 860px));
+/*
+ * "compact": escritorio bajo (laptops de 720–860 px de alto): menos aire. Los
+ * límites de 940 y 1030 px equivalen a 860 px una vez aplicada la escala de la
+ * página (110 % y 120 %).
+ */
+@custom-variant compact (@media ((min-width: 1100px) and (max-height: 860px)) or ((min-width: 1500px) and (max-height: 940px)) or ((min-width: 1800px) and (max-height: 1030px)));
 
 /* Píldoras de estado: vidrio con el tono solo en el ícono y en el borde */
 @layer components {
@@ -296,26 +321,18 @@
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    height: 26px;
-    padding: 0 11px 0 9px;
+    gap: 5px;
+    height: 1.75rem;
+    padding: 0 0.75rem 0 0.625rem;
     border-radius: 9999px;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
     font-weight: 500;
     white-space: nowrap;
     color: var(--color-ink);
     border: 1px solid var(--color-glass-rim);
-    background:
-      radial-gradient(
-        120% 160% at 0% 50%,
-        color-mix(in srgb, var(--tone) 13%, transparent),
-        transparent 62%
-      ),
-      var(--color-glass-strong);
-    box-shadow:
-      inset 0 0 0 1px color-mix(in srgb, var(--tone) 22%, transparent),
-      var(--shadow-tile);
+    background: var(--color-glass-strong);
+    box-shadow: var(--shadow-tile);
 
     & > svg {
       flex: none;

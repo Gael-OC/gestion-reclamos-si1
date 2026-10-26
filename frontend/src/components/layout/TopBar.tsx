@@ -22,9 +22,6 @@ export function TopBar() {
       <span className="text-title font-semibold whitespace-nowrap">
         Gestión de Reclamos
       </span>
-      <span className="hidden text-caption whitespace-nowrap text-ink-muted xl:inline">
-        Coquimbo · escenario académico
-      </span>
       <div className="flex-1" />
       <SearchField
         label="Buscar reclamos"

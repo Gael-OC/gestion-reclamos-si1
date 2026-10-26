@@ -26,16 +26,18 @@ function OrbLabel({ item, x, core }: { item: Item; x: number; core: boolean }) {
     item.label.length > 12 && words.length > 1
       ? [words[0], words.slice(1).join(' ')]
       : [item.label]
+  // El SVG se escala con la altura disponible (≈0,6–0,9): los tamaños de aquí
+  // se eligen para que el texto renderizado no baje de unos 12 px.
   return (
     <text
       x={x}
-      y={CY - 6 - (lines.length - 1) * 7}
+      y={CY - 3 - (lines.length - 1) * 11}
       textAnchor="middle"
       style={{ fill: `var(--color-${core ? 'on-ink' : 'ink'})` }}
     >
       <tspan
         x={x}
-        fontSize={core ? 26 : 22}
+        fontSize={core ? 40 : 34}
         fontWeight={500}
         letterSpacing="-0.02em"
       >
@@ -45,8 +47,8 @@ function OrbLabel({ item, x, core }: { item: Item; x: number; core: boolean }) {
         <tspan
           key={line}
           x={x}
-          dy={index === 0 ? 20 : 15}
-          fontSize={12}
+          dy={index === 0 ? 25 : 22}
+          fontSize={20}
           fontWeight={500}
           style={core ? undefined : { fill: 'var(--color-ink-muted)' }}
         >

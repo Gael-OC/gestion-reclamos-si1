@@ -1,11 +1,9 @@
 import { CircleCheck, TriangleAlert } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import { PLAZO_DIAS } from './estados'
 
 type PlazoChipProps = {
   /** Días corridos hasta la fecha límite; negativo si ya venció. Lo calcula el backend. */
   dias?: number
-  total?: number
   cerrado?: boolean
   dentroDePlazo?: boolean
   className?: string
@@ -16,12 +14,11 @@ function dayWord(n: number) {
 }
 
 /**
- * Plazo en días corridos con un mini anillo que muestra cuánto del plazo se
- * consumió: azul con margen, warning a 0–3 días y danger si venció.
+ * Plazo en días corridos con un punto de estado: azul con margen, warning a
+ * 0–3 días y danger si venció.
  */
 export function PlazoChip({
   dias = 0,
-  total = PLAZO_DIAS,
   cerrado = false,
   dentroDePlazo = true,
   className,
@@ -42,8 +39,6 @@ export function PlazoChip({
     )
   }
 
-  const used =
-    dias < 0 ? 1 : Math.max(0.04, Math.min(1, (total - dias) / total))
   let tone = 'pill-brand'
   let text = `${dias} ${dayWord(dias)} restantes`
   if (dias < 0) {
@@ -59,35 +54,7 @@ export function PlazoChip({
 
   return (
     <span className={cn('pill', tone, className)}>
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 14 14"
-        aria-hidden
-        className="mr-px"
-      >
-        <circle
-          cx="7"
-          cy="7"
-          r="5.4"
-          fill="none"
-          strokeWidth="2.2"
-          className="stroke-glass-shade"
-        />
-        <circle
-          cx="7"
-          cy="7"
-          r="5.4"
-          fill="none"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          pathLength={1}
-          strokeDasharray="1"
-          strokeDashoffset={1 - used}
-          transform="rotate(-90 7 7)"
-          style={{ stroke: 'var(--tone)' }}
-        />
-      </svg>
+      <i aria-hidden className="size-2 shrink-0 rounded-full bg-(--tone)" />
       <span>{text}</span>
     </span>
   )

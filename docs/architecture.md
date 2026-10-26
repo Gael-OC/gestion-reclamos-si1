@@ -92,3 +92,57 @@ breves para selección, hover y foco, respetando movimiento reducido.
 ni `float`, `floatDelay` o `enter`. `TrendCard` tampoco recibe `enter`.
 Los contratos REST y el backend no cambian. La validación y sus límites se
 registran en [performance.md](performance.md).
+
+## Propuesta de mockups alineados con los KPI
+
+Para las capturas académicas, el panel operativo resume los seis KPI y la ruta
+`/indicadores` los desarrolla en dos vistas: plazos y resolución (KPI 1 y 3) y
+pendientes y carga (`?vista=seguimiento`, KPI 2, 4, 5 y 6). Se reutilizan las
+superficies, tendencias y componentes del diseño actual, sin dependencias nuevas.
+
+El escenario compartido está en `frontend/src/features/dashboard/mockData.ts`:
+septiembre de 2026 para los indicadores mensuales y corte al 26 de octubre de
+2026 para los diarios. Los cinco estados activos se presentan completos en
+Indicadores; el panel los agrupa en revisión inicial (Ingresado y Pendiente de
+antecedentes), gestión interna (Asignado y En gestión) y espera de empresa.
+Los listados de alertas son muestras explícitas del total. Las alertas son
+subconjuntos de los activos, no categorías sumables al total de pendientes.
+
+Esta es una propuesta visual, no un acuerdo de contratos REST ni una integración
+con Power BI. No incorpora reglas de negocio al frontend: las cifras son
+respuestas ficticias fijas y las interacciones solo filtran las muestras. Los
+cálculos reales, datos de origen y frecuencia de actualización siguen pendientes
+de coordinación entre backend y analítica. El control complementario de
+trazabilidad no se presenta como un séptimo KPI.
+
+### Legibilidad y componentes de los indicadores
+
+Se subió la escala tipográfica porque el 76 % del texto estaba en 12 px y las
+etiquetas de las burbujas se renderizaban a unos 8 px. Ahora el contenido parte
+de 13 px (`caption`), los rótulos de eje de 11 px (`axis`) y la cifra principal de
+48 px (`hero-number`). Los tamaños están en `rem` y la raíz crece 10 %, 20 % o
+50 % desde 1500, 1800 y 2400 px de ancho si el alto lo permite; la variante
+`compact` adapta sus límites a esa escala. Las cifras grandes usan números
+proporcionales; `tabular-nums` queda para columnas. Es una propuesta de ajuste
+a los tokens publicados: si el equipo la confirma, hay que actualizar también el
+sistema de diseño publicado.
+
+Nuevos componentes compartidos en `components/ui/`: `BarList` (barras
+horizontales de una sola escala, para KPI 2 y KPI 5) y `RingStat` (anillo
+estático). La muestra de alertas del panel se filtra con `SegmentedControl`. Los
+gráficos de `features/dashboard/` ahora derivan sus rótulos de los datos:
+`TrendCard` muestra un punto por mes con su valor al apuntarlo, y `CierresPorMes`
+(Recharts) muestra el volumen de cierres que sustenta KPI 1 y KPI 3. Las cifras de apoyo salen
+de `mockData.ts` y `npm run check` verifica su coherencia.
+
+### Recharts y color de estados
+
+`features/indicadores/CierresPorMes` usa Recharts 3.10.1 (versión exacta en
+`frontend/package.json`) como prueba acotada: barras sin animación, último mes
+destacado y tooltip propio. Suma unos 100 kB gzip al JavaScript de la
+aplicación; si el equipo no la adopta, se revierte volviendo a `GlassBars` y
+quitando `recharts` y `react-is`.
+
+Las píldoras de estado y plazo ya no llevan un degradado teñido ni un borde de
+color: son vidrio neutro y el tono vive solo en el ícono o en un punto de 8 px
+(`PlazoChip`). El anillo de avance del plazo se retiró.
