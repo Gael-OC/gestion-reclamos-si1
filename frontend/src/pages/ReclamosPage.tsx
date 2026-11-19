@@ -25,7 +25,6 @@ import {
   FECHA_REFERENCIA,
   MERCADOS,
   RESPONSABLES,
-  USUARIO_DEMO,
 } from '@/features/reclamos/listado/mockData'
 import {
   fechaVisible,
@@ -38,6 +37,8 @@ import {
 import { cn } from '@/lib/cn'
 import { useReclamosDemo } from '@/features/reclamos/demo/context'
 import { usePerfil } from '@/features/perfiles/usePerfil'
+import { useAuth } from '@/features/auth/context'
+import { estaActivo } from '@/features/cliente/model'
 
 const PAGE_SIZE = 6
 const ATENCION = [
@@ -54,16 +55,25 @@ const ORDENES = [
 ]
 
 export function ReclamosPage() {
-  const { reclamos } = useReclamosDemo()
+  const { reclamos: todosReclamos } = useReclamosDemo()
+  const { usuario } = useAuth()
   const perfil = usePerfil()
+  const esFuncionario = perfil === 'funcionario'
+  const reclamos = todosReclamos.filter(
+    (row) =>
+      estaActivo(row) &&
+      (!esFuncionario || row.responsableId === usuario?.responsableId),
+  )
+  const responsableActual = usuario?.responsableId ?? usuario?.id ?? ''
   const [params, setParams] = useSearchParams()
   const [preview, setPreview] = useState<ReclamoListado | null>(null)
   const filtros: FiltrosListado = {
     buscar: params.get('buscar') ?? '',
     estado: params.get('estado') ?? '',
     mercado: params.get('mercado') ?? '',
-    responsable: params.get('responsable') ?? '',
-    alcance: params.get('alcance') === 'mios' ? 'mios' : 'todos',
+    responsable: esFuncionario ? '' : (params.get('responsable') ?? ''),
+    alcance:
+      esFuncionario || params.get('alcance') === 'mios' ? 'mios' : 'todos',
     atencion: ATENCION.some((item) => item.value === params.get('atencion'))
       ? (params.get('atencion') as Atencion)
       : 'todos',
@@ -74,13 +84,13 @@ export function ReclamosPage() {
   const baseRows = filtrarReclamos(
     reclamos,
     { ...filtros, atencion: 'todos' },
-    USUARIO_DEMO,
+    responsableActual,
     RESPONSABLES,
   )
   const filteredRows = filtrarReclamos(
     reclamos,
     filtros,
-    USUARIO_DEMO,
+    responsableActual,
     RESPONSABLES,
   )
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE))
@@ -95,7 +105,7 @@ export function ReclamosPage() {
     filtros.estado ||
     filtros.mercado ||
     filtros.responsable ||
-    filtros.alcance !== 'todos' ||
+    (!esFuncionario && filtros.alcance !== 'todos') ||
     filtros.atencion !== 'todos',
   )
   const counts: Record<Atencion, number> = {
@@ -130,18 +140,20 @@ export function ReclamosPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 compact:gap-3">
       <PageHeading
-        title="Reclamos"
+        title={esFuncionario ? 'Todos mis casos' : 'Reclamos'}
         subtitle={`${reclamos.length} activos · corte al ${fechaVisible(FECHA_REFERENCIA)}`}
         action={
-          <SegmentedControl
-            label="Alcance del listado"
-            value={filtros.alcance}
-            onChange={(value) => updateParam('alcance', value)}
-            options={[
-              { value: 'todos', label: 'Todos' },
-              { value: 'mios', label: 'Míos' },
-            ]}
-          />
+          !esFuncionario && (
+            <SegmentedControl
+              label="Alcance del listado"
+              value={filtros.alcance}
+              onChange={(value) => updateParam('alcance', value)}
+              options={[
+                { value: 'todos', label: 'Todos' },
+                { value: 'mios', label: 'Míos' },
+              ]}
+            />
+          )
         }
       />
 
@@ -150,7 +162,13 @@ export function ReclamosPage() {
         className="shrink-0 p-4 compact:p-3"
         aria-label="Filtros del listado"
       >
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1.15fr_1fr_1fr]">
+        <div
+          className={
+            esFuncionario
+              ? 'grid gap-3 sm:grid-cols-3'
+              : 'grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1.15fr_1fr_1fr]'
+          }
+        >
           <div className="min-w-0">
             <p aria-hidden className="mb-1.5 text-caption text-ink-muted">
               Buscar reclamo
@@ -185,19 +203,21 @@ export function ReclamosPage() {
               ...MERCADOS.map((value) => ({ value, label: value })),
             ]}
           />
-          <SelectField
-            label="Responsable"
-            value={filtros.responsable}
-            onValueChange={(value) => updateParam('responsable', value)}
-            options={[
-              { value: '', label: 'Todos los responsables' },
-              { value: 'sin_asignar', label: 'Sin asignar' },
-              ...RESPONSABLES.map((item) => ({
-                value: item.id,
-                label: item.nombre,
-              })),
-            ]}
-          />
+          {!esFuncionario && (
+            <SelectField
+              label="Responsable"
+              value={filtros.responsable}
+              onValueChange={(value) => updateParam('responsable', value)}
+              options={[
+                { value: '', label: 'Todos los responsables' },
+                { value: 'sin_asignar', label: 'Sin asignar' },
+                ...RESPONSABLES.map((item) => ({
+                  value: item.id,
+                  label: item.nombre,
+                })),
+              ]}
+            />
+          )}
         </div>
       </Glass>
 
@@ -212,7 +232,9 @@ export function ReclamosPage() {
             aria-label="Atención de reclamos"
             className="flex flex-wrap gap-1"
           >
-            {ATENCION.map(({ value, label, icon: Icon }) => (
+            {ATENCION.filter(
+              (item) => !esFuncionario || item.value !== 'sin_asignar',
+            ).map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
                 type="button"

@@ -9,23 +9,19 @@ import { EstadoBadge } from '@/features/reclamos/EstadoBadge'
 import { PlazoChip } from '@/features/reclamos/PlazoChip'
 import { PLAZO_DIAS } from '@/features/reclamos/estados'
 import { COLOR_PLAZO, plazoUsado, tonoPlazo } from '@/features/reclamos/plazo'
-import { detalleReclamo } from '@/features/reclamos/detalle/detalle'
 import { Historial } from '@/features/reclamos/detalle/Historial'
-import { RESPONSABLES } from '@/features/reclamos/listado/mockData'
 import { AsignarDialog } from '@/features/supervision/AsignarDialog'
 import { EQUIPO } from '@/features/supervision/escenario'
 import { diaRelativo } from '@/lib/fechas'
 
-/** Ficha e historial de un reclamo para la supervisión. */
 export function ReclamoDetallePage() {
   const { reclamoId = '' } = useParams()
-  // La clave reinicia el estado de la demo al cambiar de reclamo.
   return <ReclamoDetalle key={reclamoId} reclamoId={reclamoId} />
 }
 
 function ReclamoDetalle({ reclamoId }: { reclamoId: string }) {
-  const { reclamos } = useReclamosDemo()
-  const detalle = detalleReclamo(reclamoId, reclamos, RESPONSABLES)
+  const { detalle: obtenerDetalle, registrarGestion } = useReclamosDemo()
+  const detalle = obtenerDetalle(reclamoId)
   const [cambio, setCambio] = useState<string | null>(null)
   const [abierto, setAbierto] = useState(false)
 
@@ -48,20 +44,9 @@ function ReclamoDetalle({ reclamoId }: { reclamoId: string }) {
     )
   }
 
-  const responsable = cambio ?? detalle.responsable
+  const responsable = detalle.responsable
   const persona = EQUIPO.find((item) => item.nombre === responsable)
-  const historial = cambio
-    ? [
-        ...detalle.historial.filter((evento) => evento.tipo !== 'hoy'),
-        {
-          fecha: diaRelativo(0),
-          titulo: `Reasignado a ${cambio}`,
-          detalle: 'Andrea Fuentes',
-          tipo: 'gestion' as const,
-        },
-        ...detalle.historial.filter((evento) => evento.tipo === 'hoy'),
-      ]
-    : detalle.historial
+  const historial = detalle.historial
   const activo = detalle.dias !== null
   const dias = detalle.dias ?? 0
   const usado = Math.round(plazoUsado(dias))
@@ -103,7 +88,7 @@ function ReclamoDetalle({ reclamoId }: { reclamoId: string }) {
       {cambio && (
         <div className="glass-strong flex items-center gap-2.5 self-start rounded-full px-4 py-2 text-caption font-medium text-success">
           <CircleCheck size={16} aria-hidden /> El caso quedó a cargo de{' '}
-          {cambio}. Recibirá un aviso.
+          {cambio}.
         </div>
       )}
 
@@ -240,6 +225,21 @@ function ReclamoDetalle({ reclamoId }: { reclamoId: string }) {
           desdeId={persona?.id ?? detalle.responsableId}
           onConfirm={(destino) => {
             setCambio(destino.nombre)
+            registrarGestion(
+              reclamoId,
+              {
+                fecha: diaRelativo(0),
+                titulo: `Asignado a ${destino.nombre}`,
+                detalle: 'Asignación de responsable',
+                tipo: 'gestion',
+              },
+              {
+                responsableId: destino.id,
+                ...(detalle.estado === 'ingresado'
+                  ? { estado: 'asignado' }
+                  : {}),
+              },
+            )
             setAbierto(false)
           }}
         />

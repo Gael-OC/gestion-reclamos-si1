@@ -12,11 +12,6 @@ import {
 } from 'lucide-react'
 import type { NavItem } from '@/components/layout/SideRail'
 
-/*
- * Perfiles internos de la demo. Mientras no exista el login, el perfil se
- * deduce de la ruta (/supervisor o /funcionario). El login de la compañera
- * deberá reemplazar esta deducción por el perfil del usuario autenticado.
- */
 export type Perfil = 'supervisor' | 'funcionario'
 
 export const USUARIOS: Record<
@@ -64,19 +59,4 @@ export const NAV: Record<Perfil, NavItem[]> = {
     },
     { to: '/funcionario/cerrados', label: 'Cerrados', icon: CircleCheck },
   ],
-}
-
-/**
- * Perfil indicado por la ruta; null en rutas compartidas como /reclamos,
- * salvo el listado de los casos propios (`alcance=mios`), que es del funcionario.
- */
-export function perfilDeRuta(pathname: string, search = ''): Perfil | null {
-  if (pathname.startsWith('/funcionario')) return 'funcionario'
-  if (
-    pathname === '/reclamos' &&
-    new URLSearchParams(search).get('alcance') === 'mios'
-  )
-    return 'funcionario'
-  if (pathname.startsWith('/supervisor')) return 'supervisor'
-  return null
 }

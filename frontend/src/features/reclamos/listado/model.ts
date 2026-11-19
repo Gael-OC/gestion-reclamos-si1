@@ -15,6 +15,9 @@ export type ReclamoListado = {
   atencion: 'en_plazo' | 'por_vencer' | 'vencido' | 'no_aplica'
   cierreEnPlazo?: boolean
   descripcion?: string
+  clienteId?: string
+  consumidor?: string
+  resultado?: string
 }
 
 export type NuevoReclamoDatos = Pick<

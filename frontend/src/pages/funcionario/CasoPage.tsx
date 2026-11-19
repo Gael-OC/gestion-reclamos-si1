@@ -6,16 +6,12 @@ import { Button } from '@/components/ui/Button'
 import { useReclamosDemo } from '@/features/reclamos/demo/context'
 import { EstadoBadge } from '@/features/reclamos/EstadoBadge'
 import { PlazoChip } from '@/features/reclamos/PlazoChip'
-import { PLAZO_DIAS, type Estado } from '@/features/reclamos/estados'
+import { PLAZO_DIAS } from '@/features/reclamos/estados'
 import { COLOR_PLAZO, tonoPlazo } from '@/features/reclamos/plazo'
-import {
-  CASO_EJEMPLO,
-  detalleReclamo,
-  type EventoHistorial,
-} from '@/features/reclamos/detalle/detalle'
+import type { EventoHistorial } from '@/features/reclamos/detalle/detalle'
 import { Historial } from '@/features/reclamos/detalle/Historial'
-import { RESPONSABLES } from '@/features/reclamos/listado/mockData'
-import { casoDeFuncionaria, RESULTADOS } from '@/features/funcionario/escenario'
+import { RESULTADOS } from '@/features/funcionario/escenario'
+import type { CambioGestion } from '@/features/reclamos/demo/context'
 import { PASOS, proximoPaso, type Accion } from '@/features/funcionario/pasos'
 import {
   GestionDialog,
@@ -28,25 +24,14 @@ import { diaRelativo } from '@/lib/fechas'
 
 type Abierto = Accion | 'nota' | 'otra' | null
 
-/** Gestión del caso: un solo próximo paso, guiado por el estado del caso. */
 export function CasoPage() {
   const { reclamoId = '' } = useParams()
-  // La clave reinicia el estado de la demo al cambiar de caso.
   return <CasoGestion key={reclamoId} reclamoId={reclamoId} />
 }
 
 function CasoGestion({ reclamoId }: { reclamoId: string }) {
-  const { reclamos } = useReclamosDemo()
-  // El caso de ejemplo tiene la ficha completa; los demás de la funcionaria
-  // salen de su escenario y, si no, del listado de prueba.
-  const base =
-    reclamoId === CASO_EJEMPLO
-      ? detalleReclamo(reclamoId, reclamos, RESPONSABLES)
-      : (casoDeFuncionaria(reclamoId) ??
-        detalleReclamo(reclamoId, reclamos, RESPONSABLES))
-  const [estado, setEstado] = useState<Estado | null>(null)
-  const [respuesta, setRespuesta] = useState<boolean | null>(null)
-  const [nuevos, setNuevos] = useState<EventoHistorial[]>([])
+  const { detalle, registrarGestion } = useReclamosDemo()
+  const base = detalle(reclamoId)
   const [abierto, setAbierto] = useState<Abierto>(null)
   const [aviso, setAviso] = useState('')
 
@@ -69,14 +54,13 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
     )
   }
 
-  const estadoActual = estado ?? base.estado
-  const conRespuesta = respuesta ?? base.respuestaEmpresa
+  const estadoActual = base.estado
+  const conRespuesta = base.respuestaEmpresa
   const paso = proximoPaso(estadoActual, conRespuesta, base.empresa)
   const dias = base.dias ?? 0
   const activo = base.dias !== null && estadoActual !== 'cerrado'
   const historial = [
     ...base.historial.filter((evento) => evento.tipo !== 'hoy'),
-    ...nuevos,
   ]
 
   const ultimoEmpresa = [...historial]
@@ -109,8 +93,15 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
     segundo,
   ]
 
-  function registrar(evento: Omit<EventoHistorial, 'fecha'>, texto: string) {
-    setNuevos((prev) => [...prev, { ...evento, fecha: diaRelativo(0) }])
+  function registrar(
+    evento: Omit<EventoHistorial, 'fecha'>,
+    texto: string,
+    cambio?: CambioGestion,
+  ) {
+    if (
+      !registrarGestion(reclamoId, { ...evento, fecha: diaRelativo(0) }, cambio)
+    )
+      return
     setAviso(texto)
     setAbierto(null)
   }
@@ -385,7 +376,6 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
           modo={abierto === 'analizar' ? 'analisis' : 'nota'}
           onClose={() => setAbierto(null)}
           onSave={({ texto, visible, tipo }) => {
-            if (abierto === 'analizar') setEstado('en_gestion')
             registrar(
               {
                 titulo: abierto === 'analizar' ? 'Análisis registrado' : tipo,
@@ -397,6 +387,7 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
                 : visible
                   ? 'Gestión guardada y visible para el consumidor.'
                   : 'Nota interna guardada.',
+              abierto === 'analizar' ? { estado: 'en_gestion' } : {},
             )
           }}
         />
@@ -407,8 +398,6 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
           empresa={base.empresa}
           onClose={() => setAbierto(null)}
           onSave={({ hasta, texto }) => {
-            setEstado('esperando_empresa')
-            setRespuesta(false)
             registrar(
               {
                 titulo: `Solicitud enviada a ${base.empresa}`,
@@ -416,6 +405,7 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
                 tipo: 'empresa',
               },
               'Solicitud registrada. El caso pasó a Esperando respuesta de empresa.',
+              { estado: 'esperando_empresa', respuestaEmpresa: false },
             )
           }}
         />
@@ -426,8 +416,6 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
           empresa={base.empresa}
           onClose={() => setAbierto(null)}
           onSave={({ respondio, texto, otraGestion }) => {
-            setEstado('en_gestion')
-            setRespuesta(!otraGestion)
             registrar(
               {
                 titulo: respondio
@@ -441,6 +429,7 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
               otraGestion
                 ? 'Respuesta guardada. Pida una nueva gestión a la empresa.'
                 : 'Respuesta guardada. Ya puede informar el resultado.',
+              { estado: 'en_gestion', respuestaEmpresa: !otraGestion },
             )
           }}
         />
@@ -451,7 +440,6 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
           dias={dias}
           onClose={() => setAbierto(null)}
           onSave={({ resultado, mensaje }) => {
-            setEstado('cerrado')
             registrar(
               {
                 titulo: `Caso cerrado · ${RESULTADOS[resultado]}`,
@@ -459,6 +447,7 @@ function CasoGestion({ reclamoId }: { reclamoId: string }) {
                 tipo: 'gestion',
               },
               `Resultado publicado en el portal. Caso cerrado ${dias >= 0 ? 'dentro' : 'fuera'} de plazo.`,
+              { estado: 'cerrado', resultado: mensaje },
             )
           }}
         />
