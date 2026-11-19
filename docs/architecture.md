@@ -155,10 +155,10 @@ de Indicadores anteriores quedan reemplazados por `/supervisor` y
 `/supervisor/indicadores`; sus rutas antiguas redirigen. El listado de reclamos
 (`/reclamos`) y el registro (`/reclamos/nuevo`) no cambian.
 
-- **Perfil sin login:** `features/perfiles/perfiles.ts` define el menú y el
-  usuario de demo de cada perfil; `AppLayout` deduce el perfil de la ruta y lo
-  mantiene en rutas compartidas. El login deberá reemplazar esta deducción por
-  el perfil del usuario autenticado, y el backend validar permisos y propiedad.
+- **Perfil de la sesión:** `features/perfiles/perfiles.ts` mantiene los menús y
+  usuarios ficticios internos. El login obtiene el perfil de las credenciales y
+  `AppLayout` lo utiliza también en rutas compartidas. El backend deberá validar
+  los permisos y la propiedad de cada caso.
 - **Páginas:** `pages/supervisor/` (Inicio, Bandeja, Equipo, Detalle del reclamo,
   Indicadores, Usuarios y Configuración) y `pages/funcionario/` (Mis casos,
   Gestión del caso y Cerrados).
@@ -180,3 +180,23 @@ de Indicadores anteriores quedan reemplazados por `/supervisor` y
 - **Pendiente:** `features/indicadores/` (`CierresPorMes` con Recharts y
   `DeadlineCard`) quedó sin uso. Falta decidir en equipo si se reutiliza o se
   retira junto con `recharts` y `react-is`.
+
+## Propuesta: login y portal del cliente
+
+El acceso está en `/login`. El perfil se detecta con el correo y la contraseña,
+y cada usuario entra a su vista correspondiente.
+
+| Perfil | Usuario | Contraseña |
+| --- | --- | --- |
+| Cliente | `cliente@demo.local` | `Reclamos2026!` |
+| Cliente | `valentina@demo.local` | `Reclamos2026!` |
+| Cliente | `cliente2@demo.local` | `Reclamos2026!` |
+| Supervisor | `supervisor@demo.local` | `Reclamos2026!` |
+| Funcionario | `funcionario@demo.local` | `Reclamos2026!` |
+
+Son cuentas de ejemplo del frontend; la autenticación con backend sigue pendiente.
+El cliente puede registrar reclamos, consultar su seguimiento y aportar antecedentes.
+Las notas internas no se muestran en su portal.
+
+Los reclamos y gestiones se reinician al recargar la página. Crear o desactivar
+usuarios desde la vista del supervisor todavía no cambia estas credenciales.

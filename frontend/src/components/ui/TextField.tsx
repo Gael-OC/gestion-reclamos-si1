@@ -1,4 +1,4 @@
-import { useId, type ChangeEvent } from 'react'
+import { useId, type ChangeEvent, type HTMLInputTypeAttribute } from 'react'
 import { cn } from '@/lib/cn'
 
 type TextFieldProps = {
@@ -13,6 +13,10 @@ type TextFieldProps = {
   multiline?: boolean
   maxLength?: number
   className?: string
+  type?: HTMLInputTypeAttribute
+  autoComplete?: string
+  autoFocus?: boolean
+  inputClassName?: string
 }
 
 export function TextField({
@@ -27,16 +31,23 @@ export function TextField({
   multiline = false,
   maxLength,
   className,
+  type = 'text',
+  autoComplete,
+  autoFocus,
+  inputClassName,
 }: TextFieldProps) {
   const generatedId = useId()
   const fieldId = id ?? generatedId
   const feedbackId = `${fieldId}-feedback`
   const control = {
     id: fieldId,
+    name: fieldId,
     value,
     placeholder,
     required,
     maxLength,
+    autoComplete,
+    autoFocus,
     'aria-invalid': error ? true : undefined,
     'aria-describedby': error || hint ? feedbackId : undefined,
     onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -45,6 +56,7 @@ export function TextField({
       'w-full border border-glass-rim bg-glass-strong px-4 text-body text-ink shadow-tile outline-none placeholder:text-ink-muted focus:shadow-focus-ring',
       multiline ? 'min-h-28 resize-y rounded-md py-3' : 'h-11 rounded-full',
       error && 'ring-1 ring-danger/50',
+      inputClassName,
     ),
   }
   return (
@@ -63,7 +75,7 @@ export function TextField({
       {multiline ? (
         <textarea {...control} rows={4} />
       ) : (
-        <input {...control} type="text" />
+        <input {...control} type={type} />
       )}
       {(error || hint) && (
         <p

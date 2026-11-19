@@ -1,8 +1,3 @@
-/*
- * Fechas de la demo. Las vistas por perfil usan la fecha de hoy como corte:
- * los plazos se guardan en días relativos y aquí se convierten a fechas.
- */
-
 const MS_DIA = 24 * 60 * 60 * 1000
 
 export function hoy() {
@@ -10,11 +5,14 @@ export function hoy() {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())
 }
 
+export function fechaISO(fecha: Date) {
+  return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`
+}
+
 export function sumarDias(base: Date, dias: number) {
   return new Date(base.getTime() + dias * MS_DIA)
 }
 
-/** dd-mm-aaaa, el formato del sistema de diseño. */
 export function fechaLarga(fecha: Date) {
   return new Intl.DateTimeFormat('es-CL', {
     day: '2-digit',
@@ -25,12 +23,10 @@ export function fechaLarga(fecha: Date) {
     .replaceAll('/', '-')
 }
 
-/** dd-mm, para listas e historiales. */
 export function fechaCorta(fecha: Date) {
   return fechaLarga(fecha).slice(0, 5)
 }
 
-/** Fecha a `dias` de hoy (negativo hacia atrás), en formato dd-mm. */
 export function diaRelativo(dias: number) {
   return fechaCorta(sumarDias(hoy(), dias))
 }
@@ -39,7 +35,6 @@ export function nombreMes(fecha: Date) {
   return new Intl.DateTimeFormat('es-CL', { month: 'long' }).format(fecha)
 }
 
-/** Rótulos cortos ("Jul", "Ago"…) de los últimos `n` meses, el actual al final. */
 export function mesesRecientes(n: number) {
   const base = hoy()
   return Array.from({ length: n }, (_, index) => {

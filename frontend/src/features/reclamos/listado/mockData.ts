@@ -6,7 +6,9 @@ import {
 } from '@/features/dashboard/mockData'
 import { crearDemoListado } from './crearDemo'
 
-export const FECHA_REFERENCIA = '2026-10-26'
+import { fechaISO, hoy } from '@/lib/fechas'
+
+export const FECHA_REFERENCIA = fechaISO(hoy())
 const demo = crearDemoListado({
   fechaReferencia: FECHA_REFERENCIA,
   estados: reclamosActivos.estados,

@@ -9,40 +9,35 @@ export type NavItem = {
   to: string
   label: string
   icon: LucideIcon
-  /** true para que solo se active en la ruta exacta. */
   end?: boolean
-  /** Cifra sobre el ícono (pendientes de esa sección). */
   badge?: number
 }
 
 type SideRailProps = {
   items: NavItem[]
-  /** Nombre de quien usa la aplicación, para el avatar. */
   usuario: string
-  /** Cierra la sesión y vuelve al inicio de sesión. */
   onSalir: () => void
+  mostrarNotificaciones?: boolean
 }
 
 const tooltip =
   'pointer-events-none absolute top-1/2 left-full z-50 ml-3 hidden -translate-x-1.5 -translate-y-1/2 rounded-[10px] bg-ink px-2.5 py-1.5 text-caption whitespace-nowrap text-on-ink opacity-0 shadow-ink transition-[opacity,translate] duration-300 ease-spring group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 lg:block'
 
-/**
- * Riel de navegación: isla de vidrio vertical en escritorio y barra flotante
- * inferior en pantallas angostas. El ítem activo es un círculo de vidrio que
- * se desliza con resorte. El tooltip aparece por encima de las islas.
- */
-export function SideRail({ items, usuario, onSalir }: SideRailProps) {
+export function SideRail({
+  items,
+  usuario,
+  onSalir,
+  mostrarNotificaciones = true,
+}: SideRailProps) {
   const id = useId()
   const reduce = useReducedMotion()
 
   return (
-    // El contenedor posiciona y eleva el riel (z-40) por encima de las islas,
-    // para que su tooltip no quede por debajo de ellas.
     <div className="fixed inset-x-4 bottom-4 z-40 lg:relative lg:inset-auto lg:self-center">
       <nav
         aria-label="Navegación principal"
         className={cn(
-          'glass-panel flex gap-2 rounded-full p-2',
+          'glass-panel flex gap-2 overflow-x-auto rounded-full p-2 lg:overflow-visible',
           'justify-around lg:flex-col lg:justify-start lg:gap-4 lg:px-2 lg:py-3',
         )}
       >
@@ -99,17 +94,19 @@ export function SideRail({ items, usuario, onSalir }: SideRailProps) {
         </ul>
 
         <div className="hidden flex-col items-center gap-3 border-t border-glass-shade pt-3 lg:flex">
-          <button
-            type="button"
-            aria-label="Notificaciones"
-            className="group relative grid size-12 cursor-pointer place-items-center rounded-full text-ink-muted transition-colors hover:text-ink"
-          >
-            <Bell size={18} strokeWidth={1.6} aria-hidden />
-            <span className="absolute top-3 right-3 size-[7px] rounded-full bg-danger shadow-[0_0_0_2px_var(--color-glass-strong)]" />
-            <span aria-hidden className={tooltip}>
-              Notificaciones
-            </span>
-          </button>
+          {mostrarNotificaciones && (
+            <button
+              type="button"
+              aria-label="Notificaciones"
+              className="group relative grid size-12 cursor-pointer place-items-center rounded-full text-ink-muted transition-colors hover:text-ink"
+            >
+              <Bell size={18} strokeWidth={1.6} aria-hidden />
+              <span className="absolute top-3 right-3 size-[7px] rounded-full bg-danger shadow-[0_0_0_2px_var(--color-glass-strong)]" />
+              <span aria-hidden className={tooltip}>
+                Notificaciones
+              </span>
+            </button>
+          )}
           <Avatar name={usuario} size={40} />
           <button
             type="button"

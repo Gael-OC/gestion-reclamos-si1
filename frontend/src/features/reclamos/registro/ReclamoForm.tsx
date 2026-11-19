@@ -16,12 +16,9 @@ import { SelectField } from '@/components/ui/SelectField'
 import { TextField } from '@/components/ui/TextField'
 import { EstadoBadge } from '../EstadoBadge'
 import { useReclamosDemo } from '../demo/context'
-import { FECHA_REFERENCIA, MERCADOS } from '../listado/mockData'
-import {
-  fechaVisible,
-  type NuevoReclamoDatos,
-  type ReclamoListado,
-} from '../listado/model'
+import { MERCADOS } from '../listado/mockData'
+import { fechaLarga, hoy } from '@/lib/fechas'
+import { type NuevoReclamoDatos, type ReclamoListado } from '../listado/model'
 import { validarNuevoReclamo } from './validacion'
 
 const comunas = [
@@ -42,8 +39,9 @@ const vacio: NuevoReclamoDatos = {
 const avisoDatosFicticios =
   'Datos ficticios. Los registros se reinician al recargar la página.'
 
-export function ReclamoForm() {
+export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
   const navigate = useNavigate()
+  const rutaListado = cliente ? '/portal/reclamos' : '/reclamos'
   const { registrar } = useReclamosDemo()
   const [datos, setDatos] = useState<NuevoReclamoDatos>(vacio)
   const [errores, setErrores] = useState<
@@ -100,7 +98,13 @@ export function ReclamoForm() {
             <Button
               variant="ink"
               iconRight={ArrowUpRight}
-              onClick={() => navigate(`/reclamos?buscar=${registrado.id}`)}
+              onClick={() =>
+                navigate(
+                  cliente
+                    ? `${rutaListado}/${registrado.id}`
+                    : `${rutaListado}?buscar=${registrado.id}`,
+                )
+              }
             >
               Ver reclamo
             </Button>
@@ -115,9 +119,11 @@ export function ReclamoForm() {
               Registrar otro
             </Button>
           </div>
-          <p className="mt-6 border-t border-glass-shade pt-4 text-caption text-ink-muted">
-            {avisoDatosFicticios}
-          </p>
+          {!cliente && (
+            <p className="mt-6 border-t border-glass-shade pt-4 text-caption text-ink-muted">
+              {avisoDatosFicticios}
+            </p>
+          )}
         </Glass>
       </div>
     )
@@ -127,7 +133,7 @@ export function ReclamoForm() {
     <form
       noValidate
       onSubmit={enviar}
-      className="grid min-h-0 flex-1 gap-6 lg:grid-cols-3 tall:grid-rows-[minmax(0,1fr)] compact:gap-5"
+      className={`grid min-h-0 flex-1 gap-6 lg:grid-cols-3 ${cliente ? '' : 'tall:grid-rows-[minmax(0,1fr)]'} compact:gap-5`}
     >
       <Glass
         title="Antecedentes del reclamo"
@@ -206,7 +212,7 @@ export function ReclamoForm() {
           <Button
             variant="ghost"
             icon={ArrowLeft}
-            onClick={() => navigate('/reclamos')}
+            onClick={() => navigate(rutaListado)}
           >
             Cancelar
           </Button>
@@ -268,14 +274,16 @@ export function ReclamoForm() {
               <dt className="text-caption text-ink-muted">Fecha de ingreso</dt>
               <dd className="flex items-center gap-1.5 text-label">
                 <CalendarDays size={14} strokeWidth={1.6} aria-hidden />
-                {fechaVisible(FECHA_REFERENCIA)}
+                {fechaLarga(hoy())}
               </dd>
             </div>
           </dl>
         </div>
-        <p className="mt-auto border-t border-glass-shade pt-4 text-caption text-ink-muted">
-          {avisoDatosFicticios}
-        </p>
+        {!cliente && (
+          <p className="mt-auto border-t border-glass-shade pt-4 text-caption text-ink-muted">
+            {avisoDatosFicticios}
+          </p>
+        )}
       </Glass>
     </form>
   )

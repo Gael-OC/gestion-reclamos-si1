@@ -2,15 +2,10 @@ import { diaRelativo, fechaLarga, hoy, sumarDias } from '@/lib/fechas'
 import { PLAZO_DIAS, type Estado } from '../estados'
 import type { ReclamoListado } from '../listado/model'
 
-/*
- * Ficha de un reclamo para las vistas de detalle y de gestión. El backend
- * entregará estos datos; aquí se arman desde el listado de prueba y se agrega
- * un caso completo de ejemplo (R-2026-004812) con historial y comunicaciones.
- */
-
 export type TipoEvento = 'sistema' | 'gestion' | 'empresa' | 'nota' | 'hoy'
 
 export type EventoHistorial = {
+  registradoEn?: number
   fecha: string
   titulo: string
   detalle: string
@@ -28,13 +23,11 @@ export type DetalleReclamo = {
   estado: Estado
   responsableId: string | null
   responsable: string | null
-  /** Días hasta la fecha límite; null si el caso terminó. */
   dias: number | null
   fechaIngreso: string
   fechaLimite: string
   adjuntos: string[]
   historial: EventoHistorial[]
-  /** true si ya se registró la respuesta de la empresa. */
   respuestaEmpresa: boolean
 }
 
@@ -108,7 +101,6 @@ function casoEjemplo(): DetalleReclamo {
 
 const deIso = (iso: string) => iso.split('-').reverse().join('-')
 
-/** Ficha del reclamo o null si el folio no existe en la demo. */
 export function detalleReclamo(
   id: string,
   reclamos: ReclamoListado[],
@@ -162,7 +154,7 @@ export function detalleReclamo(
     empresa: row.empresa,
     mercado: row.mercado,
     comuna: row.comuna,
-    consumidor: 'Consumidor de prueba',
+    consumidor: row.consumidor ?? 'Consumidor de prueba',
     relato: row.descripcion ?? 'Relato del consumidor (dato de prueba).',
     estado: row.estado,
     responsableId: row.responsableId,

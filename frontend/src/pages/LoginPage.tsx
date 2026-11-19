@@ -1,61 +1,122 @@
-import { Link } from 'react-router'
+import { useState, type FormEvent } from 'react'
+import { Link, Navigate } from 'react-router'
 import { ArrowRight } from 'lucide-react'
-import { Glass } from '@/components/ui/Glass'
+import { Button } from '@/components/ui/Button'
+import { TextField } from '@/components/ui/TextField'
+import { AuthLayout } from '@/features/auth/AuthLayout'
+import { PasswordField } from '@/features/auth/PasswordField'
+import { useAuth } from '@/features/auth/context'
+import { emailValido, inicioPorRol } from '@/features/auth/model'
+import { InformacionSernac } from '@/features/auth/InformacionSernac'
 
-const campo =
-  'flex h-11 items-center rounded-full border-[1.5px] border-dashed border-ink-muted/40 px-4 text-caption text-ink-muted'
-
-/**
- * Espacio reservado: el login lo diseña la otra integrante de frontend.
- * Mientras tanto, muestra a dónde lleva cada perfil después de ingresar.
- */
 export function LoginPage() {
+  const { usuario, iniciarSesion } = useAuth()
+  const [ingresando, setIngresando] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [errores, setErrores] = useState<{
+    email?: string
+    password?: string
+    acceso?: string
+  }>({})
+  if (usuario) return <Navigate to={inicioPorRol(usuario.rol)} replace />
+
+  async function enviar(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (ingresando) return
+    const campos = new FormData(event.currentTarget)
+    const correo = String(campos.get('login-email') ?? '')
+    const clave = String(campos.get('login-password') ?? '')
+    setEmail(correo)
+    setPassword(clave)
+    const next = {
+      email: emailValido(correo)
+        ? undefined
+        : 'Ingresa un correo electrónico válido.',
+      password: clave ? undefined : 'Ingresa tu contraseña.',
+    }
+    setErrores(next)
+    if (next.email || next.password) {
+      document
+        .getElementById(next.email ? 'login-email' : 'login-password')
+        ?.focus()
+      return
+    }
+    setIngresando(true)
+    const resultado = await iniciarSesion(correo, clave)
+    setIngresando(false)
+    if (!resultado.ok) setErrores({ acceso: resultado.error })
+  }
+
   return (
-    <div className="grid min-h-dvh place-items-center px-6 py-12">
-      <Glass className="flex w-full max-w-md flex-col gap-4 rounded-xl p-8">
-        <span className="self-start rounded-full bg-brand-mist px-3 py-1 text-caption font-semibold text-brand">
-          Espacio reservado
-        </span>
+    <AuthLayout informacion={<InformacionSernac />}>
+      <h1 className="text-display tall:text-[2.125rem] tall:leading-10">
+        Iniciar sesión
+      </h1>
+      <form
+        onSubmit={enviar}
+        noValidate
+        className="mt-5 space-y-4 sm:mt-6 md:space-y-5 md:[&_input]:h-12 [&_label]:text-label"
+      >
+        <TextField
+          id="login-email"
+          label="Correo electrónico"
+          type="email"
+          autoComplete="username"
+          value={email}
+          onValueChange={(value) => {
+            setEmail(value)
+            setErrores({})
+          }}
+          placeholder="nombre@correo.cl"
+          required
+          error={errores.email}
+          maxLength={254}
+        />
         <div>
-          <h1 className="text-display">Inicio de sesión</h1>
-          <p className="mt-1 text-caption text-ink-muted">
-            Pantalla a cargo de la otra integrante de frontend.
+          <PasswordField
+            id="login-password"
+            value={password}
+            onValueChange={(value) => {
+              setPassword(value)
+              setErrores({})
+            }}
+            error={errores.password}
+            toggleClassName="md:top-8"
+          />
+          <div className="mt-2 flex justify-end">
+            <Link
+              to="/recuperar-acceso"
+              className="rounded-sm text-label text-brand underline-offset-4 hover:underline"
+            >
+              Recuperar acceso
+            </Link>
+          </div>
+        </div>
+        {errores.acceso && (
+          <p role="alert" className="text-caption text-danger">
+            {errores.acceso}
           </p>
-        </div>
-        <div aria-hidden className="flex flex-col gap-3">
-          <span className={campo}>Correo</span>
-          <span className={campo}>Contraseña</span>
-        </div>
-        <div className="flex flex-col gap-2 border-t border-glass-shade pt-4">
-          <p className="text-caption text-ink-muted">
-            Entrar a la demo según el perfil:
-          </p>
-          <Link
-            to="/supervisor"
-            className="flex h-12 items-center justify-between rounded-full bg-ink px-5 font-medium text-on-ink shadow-ink hover:bg-ink-soft"
-          >
-            Supervisor o administrador
-            <ArrowRight size={16} aria-hidden />
-          </Link>
-          <Link
-            to="/funcionario"
-            className="glass-strong flex h-12 items-center justify-between rounded-full px-5 font-medium"
-          >
-            Funcionario
-            <ArrowRight size={16} aria-hidden />
-          </Link>
-          <Link
-            to="/portal"
-            className="flex h-12 items-center justify-between rounded-full border-[1.5px] border-dashed border-ink-muted/40 px-5 text-ink-muted"
-          >
-            Consumidor <span className="text-caption">Portal</span>
-          </Link>
-        </div>
-        <p className="text-center text-caption text-ink-muted">
-          Prototipo académico ficticio — UCN 2026. Sin relación institucional
-          con SERNAC.
-        </p>
-      </Glass>
-    </div>
+        )}
+        <Button
+          type="submit"
+          variant="ink"
+          iconRight={ArrowRight}
+          className="w-full md:h-12"
+          disabled={ingresando}
+        >
+          {ingresando ? 'Ingresando…' : 'Ingresar'}
+        </Button>
+      </form>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 border-t border-glass-rim pt-4 text-label sm:mt-6 sm:pt-5">
+        <span className="text-ink-muted">¿No tienes cuenta?</span>
+        <Link
+          to="/registro"
+          className="rounded-sm font-medium text-brand underline-offset-4 hover:underline"
+        >
+          Crear cuenta
+        </Link>
+      </div>
+    </AuthLayout>
   )
 }
