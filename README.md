@@ -87,15 +87,13 @@ npm ci
 npm run dev
 ```
 
-Abre [http://127.0.0.1:5173](http://127.0.0.1:5173). La raíz abre el panel
-(`/dashboard`), diseñado para escritorio: en pantallas de 1100 × 700 px o más
-cabe completo en la ventana, sin desplazamiento general (en 1100 × 700 px la
-tercera fila de la tabla de atención queda tras un desplazamiento interno).
-La tipografía parte de 13 px para el contenido y crece un 10 %, 20 % o 50 % en
-pantallas desde 1500, 1800 y 2400 px de ancho. La tabla de atención
-puede desplazarse horizontalmente si el ancho disponible no alcanza para todas
-sus columnas. Indicadores también cuenta con dos vistas de mockup para los seis
-KPI. Las demás rutas muestran un título y un aviso de diseño pendiente:
+Abre [http://127.0.0.1:5173](http://127.0.0.1:5173). La raíz abre `/login`,
+un espacio reservado con accesos de demo para cada perfil. Las vistas están
+diseñadas para escritorio: en pantallas de 1100 × 700 px o más caben en la
+ventana, y las listas largas se desplazan dentro de su isla. La tipografía parte
+de 13 px para el contenido y crece un 10 %, 20 % o 50 % en pantallas desde 1500,
+1800 y 2400 px de ancho. Mientras no exista el login, el perfil se deduce de la
+ruta (`/supervisor` o `/funcionario`).
 
 Si el puerto 5173 está ocupado, inicia Vite en otro puerto, por ejemplo:
 
@@ -105,32 +103,34 @@ npm run dev -- --port 5174
 
 Abre entonces [http://127.0.0.1:5174](http://127.0.0.1:5174).
 
-| Ruta                             | Vista prevista                                       |
-| -------------------------------- | ---------------------------------------------------- |
-| `/login`                         | Inicio de sesión                                     |
-| `/dashboard`                     | Panel principal (con datos de prueba)                |
-| `/reclamos`                      | Listado de reclamos                                  |
-| `/reclamos/nuevo`                | Registro de reclamo                                  |
-| `/reclamos/:reclamoId`           | Detalle; por ejemplo, `/reclamos/ejemplo`            |
-| `/asignaciones`                  | Asignaciones                                         |
-| `/indicadores`                   | KPI de plazos y resolución (datos de prueba)         |
-| `/indicadores?vista=seguimiento` | KPI de pendientes, carga y alertas (datos de prueba) |
-| `/configuracion`                 | Configuración                                        |
+| Ruta                            | Vista                                                     |
+| ------------------------------- | --------------------------------------------------------- |
+| `/login`                        | Espacio reservado del login, con accesos de demo          |
+| `/portal`                       | Espacio reservado del portal del consumidor               |
+| `/supervisor`                   | Inicio del supervisor: KPI en formas y tareas del día     |
+| `/supervisor/bandeja`           | Revisar ingresos: asignar, pedir antecedentes o anular    |
+| `/supervisor/equipo`            | Carga por funcionario (KPI 5) y reasignación              |
+| `/supervisor/indicadores`       | Los seis KPI                                              |
+| `/supervisor/usuarios`          | Administrar usuarios internos                             |
+| `/supervisor/configuracion`     | Plazo, aviso de vencimiento, estados y catálogos          |
+| `/reclamos`                     | Listado de reclamos                                       |
+| `/reclamos/nuevo`               | Registro de reclamo (pasará al portal)                    |
+| `/reclamos/:reclamoId`          | Ficha e historial; por ejemplo, `/reclamos/R-2026-004812` |
+| `/funcionario`                  | Mis casos: prioridades, plazos y etapas                   |
+| `/funcionario/casos/:reclamoId` | Gestión del caso guiada por el próximo paso               |
+| `/funcionario/cerrados`         | Cierres del mes de la funcionaria (KPI 1 y 3)             |
+
+Las rutas anteriores `/dashboard`, `/indicadores`, `/asignaciones` y
+`/configuracion` redirigen a sus equivalentes del supervisor. Las acciones
+(asignar, cerrar, crear usuarios, etc.) cambian solo la vista en curso y se
+pierden al recargar: no hay backend conectado.
 
 ### Capturas de los mockups para la presentación
 
-Las tres composiciones conservan el diseño de islas de vidrio y usan un escenario
-fijo de datos ficticios. Para las capturas, abrir estas direcciones en una ventana
-de 1280 × 720 px o mayor (también se adaptan a pantallas pequeñas):
-
-- `/dashboard`: resumen operativo de los seis KPI, distribución agrupada de
-  pendientes, carga por funcionario y muestra de alertas; los tiles de KPI 4 y
-  KPI 6 filtran la muestra.
-- `/indicadores`: KPI 1 y 3, tendencias de mayo a septiembre de 2026, base de
-  cierres y cierres por mes. El período seleccionado es septiembre de 2026.
-- `/indicadores?vista=seguimiento`: KPI 2, 4, 5 y 6, con los cinco estados
-  activos, carga por responsable y muestras de casos. La fecha de corte es el
-  26 de octubre de 2026.
+Abrir las rutas de la tabla en una ventana de 1280 × 720 px o mayor. Las fechas
+de corte siguen el día actual; los plazos se guardan en días relativos. El caso
+de ejemplo completo es `R-2026-004812` (vence hoy): en
+`/funcionario/casos/R-2026-004812` puede recorrerse el cierre con su diálogo.
 
 Los 342 activos incluyen 294 asignados y 48 sin asignar. Los 28 próximos a vencer
 (0–3 días, incluido hoy) y 19 vencidos son subconjuntos de esos activos. Los

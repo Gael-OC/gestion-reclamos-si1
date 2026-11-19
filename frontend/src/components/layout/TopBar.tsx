@@ -1,19 +1,25 @@
-import { ArrowLeft, Plus } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router'
+import { useState, type FormEvent } from 'react'
+import { Search } from 'lucide-react'
 import { Glass } from '@/components/ui/Glass'
-import { Button } from '@/components/ui/Button'
+import { fechaLarga, hoy } from '@/lib/fechas'
 
-const today = new Intl.DateTimeFormat('es-CL', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-})
-  .format(new Date())
-  .replaceAll('/', '-')
+type TopBarProps = {
+  /** Qué hacer con la búsqueda (por ejemplo, abrir el listado filtrado). */
+  onBuscar: (texto: string) => void
+}
 
-export function TopBar() {
-  const navigate = useNavigate()
-  const nuevoReclamo = useLocation().pathname === '/reclamos/nuevo'
+/**
+ * Barra superior en píldora: nombre del sistema, búsqueda de reclamos y la
+ * fecha de corte. La acción principal de cada vista va en su encabezado.
+ */
+export function TopBar({ onBuscar }: TopBarProps) {
+  const [texto, setTexto] = useState('')
+
+  function enviar(event: FormEvent) {
+    event.preventDefault()
+    onBuscar(texto.trim())
+  }
+
   return (
     <Glass
       role="banner"
@@ -24,19 +30,22 @@ export function TopBar() {
         Gestión de Reclamos
       </span>
       <div className="flex-1" />
-      <span className="pill pill-neutral hidden h-11 px-4 font-mono text-id sm:inline-flex">
-        {today}
+      <form role="search" onSubmit={enviar} className="hidden sm:block">
+        <label className="flex h-11 w-80 items-center gap-2.5 rounded-full border border-glass-rim bg-glass-strong px-4 text-ink-muted shadow-tile transition-[box-shadow,background-color] focus-within:bg-white focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-brand)_18%,transparent)]">
+          <Search size={16} strokeWidth={1.6} aria-hidden />
+          <span className="sr-only">Buscar reclamo</span>
+          <input
+            type="search"
+            value={texto}
+            onChange={(event) => setTexto(event.target.value)}
+            placeholder="Buscar folio, empresa o asunto"
+            className="w-full bg-transparent text-body text-ink outline-none placeholder:text-ink-muted focus-visible:shadow-none [&::-webkit-search-cancel-button]:hidden"
+          />
+        </label>
+      </form>
+      <span className="pill pill-neutral h-11 px-4 font-mono text-id">
+        {fechaLarga(hoy())}
       </span>
-      <Button
-        variant={nuevoReclamo ? 'glass' : 'ink'}
-        icon={nuevoReclamo ? ArrowLeft : Plus}
-        aria-label={nuevoReclamo ? 'Volver al listado' : 'Nuevo reclamo'}
-        onClick={() => navigate(nuevoReclamo ? '/reclamos' : '/reclamos/nuevo')}
-      >
-        <span className="hidden sm:inline">
-          {nuevoReclamo ? 'Volver al listado' : 'Nuevo reclamo'}
-        </span>
-      </Button>
     </Glass>
   )
 }

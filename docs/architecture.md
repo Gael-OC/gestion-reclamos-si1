@@ -146,3 +146,37 @@ quitando `recharts` y `react-is`.
 Las píldoras de estado y plazo ya no llevan un degradado teñido ni un borde de
 color: son vidrio neutro y el tono vive solo en el ícono o en un punto de 8 px
 (`PlazoChip`). El anillo de avance del plazo se retiró.
+
+## Propuesta: vistas separadas por perfil
+
+**Propuesta en revisión.** Las vistas internas se separan en `/supervisor/*` y
+`/funcionario/*` según la versión A del canvas de propuestas. El panel y la vista
+de Indicadores anteriores quedan reemplazados por `/supervisor` y
+`/supervisor/indicadores`; sus rutas antiguas redirigen. El listado de reclamos
+(`/reclamos`) y el registro (`/reclamos/nuevo`) no cambian.
+
+- **Perfil sin login:** `features/perfiles/perfiles.ts` define el menú y el
+  usuario de demo de cada perfil; `AppLayout` deduce el perfil de la ruta y lo
+  mantiene en rutas compartidas. El login deberá reemplazar esta deducción por
+  el perfil del usuario autenticado, y el backend validar permisos y propiedad.
+- **Páginas:** `pages/supervisor/` (Inicio, Bandeja, Equipo, Detalle del reclamo,
+  Indicadores, Usuarios y Configuración) y `pages/funcionario/` (Mis casos,
+  Gestión del caso y Cerrados).
+- **Funciones:** `features/supervision/` y `features/funcionario/` tienen el
+  escenario de prueba y los diálogos de cada perfil; `features/reclamos/detalle/`
+  arma la ficha e historial compartidos, y `features/reclamos/plazo.ts` el texto
+  y tono del plazo. `features/funcionario/pasos.ts` guía el próximo paso según el
+  estado; las transiciones válidas las debe controlar el backend.
+- **Componentes compartidos nuevos:** `Dialog` (`<dialog>` nativo), `ChipGroup`,
+  `Switch` y `Orb` en `components/ui/`. `LiquidOrbs` acepta tonos de alerta en
+  sus burbujas laterales y `GlassBars` una barra activa roja.
+- **Fechas:** las vistas por perfil usan el día actual como corte
+  (`lib/fechas.ts`) y guardan los plazos como días relativos. Las cifras totales
+  siguen saliendo de `features/dashboard/mockData.ts`.
+- **Validaciones de demo:** motivo y explicación al anular, antecedentes pedidos,
+  nombre y correo únicos al crear usuarios, fecha no anterior a hoy al pedir
+  respuesta a la empresa, resultado y mensaje al cerrar. El backend deberá
+  repetirlas.
+- **Pendiente:** `features/indicadores/` (`CierresPorMes` con Recharts y
+  `DeadlineCard`) quedó sin uso. Falta decidir en equipo si se reutiliza o se
+  retira junto con `recharts` y `react-is`.

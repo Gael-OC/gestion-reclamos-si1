@@ -38,9 +38,15 @@ export function ResponsableListado({ id }: { id: string | null }) {
 type ReclamosTableProps = {
   rows: ReclamoListado[]
   onPreview: (row: ReclamoListado) => void
+  /** Reclamo con el resumen abierto: su fila queda resaltada. */
+  selectedId?: string
 }
 
-export function ReclamosTable({ rows, onPreview }: ReclamosTableProps) {
+export function ReclamosTable({
+  rows,
+  onPreview,
+  selectedId,
+}: ReclamosTableProps) {
   return (
     <>
       <div
@@ -84,6 +90,7 @@ export function ReclamosTable({ rows, onPreview }: ReclamosTableProps) {
                 tabIndex={0}
                 aria-label={`Ver resumen del reclamo ${row.id}`}
                 aria-haspopup="dialog"
+                aria-current={row.id === selectedId ? true : undefined}
                 onClick={(event) => {
                   event.currentTarget.focus({ preventScroll: true })
                   onPreview(row)
@@ -97,7 +104,7 @@ export function ReclamosTable({ rows, onPreview }: ReclamosTableProps) {
                     onPreview(row)
                   }
                 }}
-                className="group cursor-pointer transition-colors hover:bg-glass-tile focus-visible:bg-glass-strong"
+                className="group cursor-pointer transition-colors hover:bg-glass-tile focus-visible:bg-glass-strong aria-[current=true]:bg-white aria-[current=true]:shadow-[inset_4px_0_0_var(--color-brand)]"
               >
                 <td className="border-b border-glass-shade px-3 py-3 compact:py-2">
                   <div className="flex items-center justify-between gap-2">

@@ -1,34 +1,37 @@
 import { useId } from 'react'
 import { NavLink } from 'react-router'
 import { motion, useReducedMotion } from 'motion/react'
-import {
-  Bell,
-  ChartColumn,
-  ChartPie,
-  Inbox,
-  Settings,
-  UserPlus,
-  type LucideIcon,
-} from 'lucide-react'
+import { Bell, LogOut, type LucideIcon } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { cn } from '@/lib/cn'
 
-type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean }
+export type NavItem = {
+  to: string
+  label: string
+  icon: LucideIcon
+  /** true para que solo se active en la ruta exacta. */
+  end?: boolean
+  /** Cifra sobre el ícono (pendientes de esa sección). */
+  badge?: number
+}
 
-const NAV: NavItem[] = [
-  { to: '/dashboard', label: 'Panel', icon: ChartPie },
-  { to: '/reclamos', label: 'Reclamos', icon: Inbox },
-  { to: '/asignaciones', label: 'Asignaciones', icon: UserPlus },
-  { to: '/indicadores', label: 'Indicadores', icon: ChartColumn },
-  { to: '/configuracion', label: 'Configuración', icon: Settings },
-]
+type SideRailProps = {
+  items: NavItem[]
+  /** Nombre de quien usa la aplicación, para el avatar. */
+  usuario: string
+  /** Cierra la sesión y vuelve al inicio de sesión. */
+  onSalir: () => void
+}
+
+const tooltip =
+  'pointer-events-none absolute top-1/2 left-full z-50 ml-3 hidden -translate-x-1.5 -translate-y-1/2 rounded-[10px] bg-ink px-2.5 py-1.5 text-caption whitespace-nowrap text-on-ink opacity-0 shadow-ink transition-[opacity,translate] duration-300 ease-spring group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 lg:block'
 
 /**
  * Riel de navegación: isla de vidrio vertical en escritorio y barra flotante
  * inferior en pantallas angostas. El ítem activo es un círculo de vidrio que
  * se desliza con resorte. El tooltip aparece por encima de las islas.
  */
-export function SideRail() {
+export function SideRail({ items, usuario, onSalir }: SideRailProps) {
   const id = useId()
   const reduce = useReducedMotion()
 
@@ -44,11 +47,14 @@ export function SideRail() {
         )}
       >
         <ul className="flex w-full justify-around gap-1 lg:flex-col lg:gap-2">
-          {NAV.map((item) => (
+          {items.map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
                 end={item.end}
+                aria-label={
+                  item.badge ? `${item.label}, ${item.badge}` : item.label
+                }
                 className="group relative grid size-12 place-items-center rounded-full text-ink-muted transition-colors hover:text-ink aria-[current=page]:text-ink"
               >
                 {({ isActive }) => (
@@ -74,11 +80,15 @@ export function SideRail() {
                       aria-hidden
                       className="relative transition-transform duration-300 ease-spring group-hover:scale-110"
                     />
-                    <span className="sr-only">{item.label}</span>
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute top-1/2 left-full z-50 ml-3 hidden -translate-x-1.5 -translate-y-1/2 rounded-[10px] bg-ink px-2.5 py-1.5 text-caption whitespace-nowrap text-on-ink opacity-0 shadow-ink transition-[opacity,translate] duration-300 ease-spring group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 lg:block"
-                    >
+                    {item.badge !== undefined && (
+                      <span
+                        aria-hidden
+                        className="absolute top-0.5 -right-0.5 grid h-[18px] min-w-5 place-items-center rounded-full bg-ink px-1.5 text-[0.6875rem] leading-none font-semibold text-on-ink shadow-[0_0_0_2px_var(--color-glass-strong)]"
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                    <span aria-hidden className={tooltip}>
                       {item.label}
                     </span>
                   </>
@@ -96,14 +106,22 @@ export function SideRail() {
           >
             <Bell size={18} strokeWidth={1.6} aria-hidden />
             <span className="absolute top-3 right-3 size-[7px] rounded-full bg-danger shadow-[0_0_0_2px_var(--color-glass-strong)]" />
-            <span
-              aria-hidden
-              className="pointer-events-none absolute top-1/2 left-full z-50 ml-3 -translate-x-1.5 -translate-y-1/2 rounded-[10px] bg-ink px-2.5 py-1.5 text-caption whitespace-nowrap text-on-ink opacity-0 shadow-ink transition-[opacity,translate] duration-300 ease-spring group-hover:translate-x-0 group-hover:opacity-100"
-            >
+            <span aria-hidden className={tooltip}>
               Notificaciones
             </span>
           </button>
-          <Avatar name="Camila Rojas" size={40} />
+          <Avatar name={usuario} size={40} />
+          <button
+            type="button"
+            aria-label="Cerrar sesión"
+            onClick={onSalir}
+            className="group relative grid size-12 cursor-pointer place-items-center rounded-full text-ink-muted transition-colors hover:bg-glass-tile hover:text-danger"
+          >
+            <LogOut size={18} strokeWidth={1.6} aria-hidden />
+            <span aria-hidden className={tooltip}>
+              Cerrar sesión
+            </span>
+          </button>
         </div>
       </nav>
     </div>

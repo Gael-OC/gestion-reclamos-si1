@@ -8,6 +8,8 @@ type GlassBarsProps = {
   /** Índice activo al inicio (por defecto, el último). */
   initialActive?: number
   format?: (value: number) => string
+  /** Color de la barra activa: azul por defecto, rojo para vencidos. */
+  tone?: 'brand' | 'danger'
   className?: string
 }
 
@@ -19,6 +21,7 @@ export function GlassBars({
   data,
   initialActive,
   format = String,
+  tone = 'brand',
   className,
 }: GlassBarsProps) {
   const [active, setActive] = useState(initialActive ?? data.length - 1)
@@ -44,9 +47,11 @@ export function GlassBars({
                 style={{ height: `${Math.max(12, (bar.value / max) * 100)}%` }}
                 className={cn(
                   'relative w-full max-w-12 rounded-md border transition-[background,box-shadow,translate] duration-200 motion-safe:group-hover:-translate-y-0.5',
-                  on
-                    ? 'border-brand/40 bg-linear-to-b from-[color-mix(in_srgb,var(--color-brand)_82%,var(--color-orb-perla))] to-brand shadow-[inset_0_1px_0_var(--color-glass-rim),0_14px_26px_-14px_var(--color-brand)]'
-                    : 'border-glass-rim bg-linear-to-b from-glass-strong to-[color-mix(in_srgb,var(--color-sky-hielo)_55%,transparent)] shadow-tile',
+                  on && tone === 'danger'
+                    ? 'border-danger/40 bg-linear-to-b from-[color-mix(in_srgb,var(--color-danger)_78%,var(--color-orb-perla))] to-danger shadow-[inset_0_1px_0_var(--color-glass-rim),0_14px_26px_-14px_var(--color-danger)]'
+                    : on
+                      ? 'border-brand/40 bg-linear-to-b from-[color-mix(in_srgb,var(--color-brand)_82%,var(--color-orb-perla))] to-brand shadow-[inset_0_1px_0_var(--color-glass-rim),0_14px_26px_-14px_var(--color-brand)]'
+                      : 'border-glass-rim bg-linear-to-b from-glass-strong to-[color-mix(in_srgb,var(--color-sky-hielo)_55%,transparent)] shadow-tile',
                 )}
               >
                 {on && (
