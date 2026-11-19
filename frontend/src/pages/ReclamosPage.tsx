@@ -37,6 +37,7 @@ import {
 } from '@/features/reclamos/listado/model'
 import { cn } from '@/lib/cn'
 import { useReclamosDemo } from '@/features/reclamos/demo/context'
+import { usePerfil } from '@/features/perfiles/usePerfil'
 
 const PAGE_SIZE = 6
 const ATENCION = [
@@ -54,6 +55,7 @@ const ORDENES = [
 
 export function ReclamosPage() {
   const { reclamos } = useReclamosDemo()
+  const perfil = usePerfil()
   const [params, setParams] = useSearchParams()
   const [preview, setPreview] = useState<ReclamoListado | null>(null)
   const filtros: FiltrosListado = {
@@ -263,6 +265,7 @@ export function ReclamosPage() {
             key={`${page}-${filtros.orden}`}
             rows={rows}
             onPreview={setPreview}
+            selectedId={preview?.id}
           />
         ) : (
           <div className="flex min-h-48 flex-1 flex-col items-center justify-center gap-3 px-4 py-6 text-center tall:min-h-0">
@@ -348,7 +351,15 @@ export function ReclamosPage() {
         </footer>
       </Glass>
       {preview && (
-        <ReclamoPreview reclamo={preview} onClose={() => setPreview(null)} />
+        <ReclamoPreview
+          reclamo={preview}
+          onClose={() => setPreview(null)}
+          detalleHref={
+            perfil === 'funcionario'
+              ? `/funcionario/casos/${preview.id}`
+              : `/reclamos/${preview.id}`
+          }
+        />
       )}
     </div>
   )
