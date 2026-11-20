@@ -153,7 +153,7 @@ color: son vidrio neutro y el tono vive solo en el ícono o en un punto de 8 px
 `/funcionario/*` según la versión A del canvas de propuestas. El panel y la vista
 de Indicadores anteriores quedan reemplazados por `/supervisor` y
 `/supervisor/indicadores`; sus rutas antiguas redirigen. El listado de reclamos
-(`/reclamos`) y el registro (`/reclamos/nuevo`) no cambian.
+(`/reclamos`) no cambia; el registro interno se retiró (ver abajo).
 
 - **Perfil de la sesión:** `features/perfiles/perfiles.ts` mantiene los menús y
   usuarios ficticios internos. El login obtiene el perfil de las credenciales y
@@ -181,17 +181,53 @@ de Indicadores anteriores quedan reemplazados por `/supervisor` y
   `DeadlineCard`) quedó sin uso. Falta decidir en equipo si se reutiliza o se
   retira junto con `recharts` y `react-is`.
 
+### Ajuste: flujo integrado entre perfiles
+
+**Propuesta en revisión.** Las vistas de supervisor y funcionario leen el mismo
+estado de la demo que el portal del cliente (`features/reclamos/demo`), para que
+un reclamo recorra el proceso completo sin recargar la página:
+
+- `features/supervision/useBandeja.ts` arma la Bandeja con los reclamos
+  Ingresados (incluidos los nuevos del portal) y los pendientes cuyo consumidor
+  ya entregó antecedentes. Asignar, pedir antecedentes y anular quedan como
+  gestiones del caso; la solicitud de antecedentes llega al portal como
+  solicitud y la anulación como resultado. `?caso=` abre un reclamo concreto.
+- `features/funcionario/useMisCasos.ts` agrega a Mis casos lo asignado durante
+  la demo, calcula el paso siguiente según el estado y suma los cierres a
+  Cerrados. Las cifras parten del escenario y se ajustan con esos cambios.
+- Los contadores del riel (Bandeja y Mis casos) salen de esos cálculos; se
+  quitó la campana de notificaciones porque no tenía función.
+- La ficha y el seguimiento parten del caso como se cargó y agregan las
+  gestiones posteriores, sin repetir eventos.
+- Legibilidad: `--text-axis` sube de 11 a 12 px (actualizar también el sistema
+  de diseño publicado si se confirma) y se ajustaron rótulos y textos cortados
+  del Inicio, Bandeja y Equipo. El riel queda fijo al desplazarse en el portal.
+- Textos: el portal y el formulario de reclamo tratan de «tú»; el espacio
+  interno mantiene «usted». El acceso muestra el aviso de proyecto académico.
+- Se retiró el registro interno `/reclamos/nuevo` (redirige a la Bandeja): según
+  el BPMN el proceso comienza con el ingreso del consumidor en el portal, y
+  `ReclamoForm` quedó solo para `/portal/reclamos/nuevo`.
+- Portal: el inicio muestra en qué etapa está cada reclamo (un punto por caso)
+  en lugar de tres cifras redundantes; Mi cuenta quedó en una sola tarjeta; un
+  reclamo anulado ya no se muestra con el ícono de éxito.
+- Las vistas del portal ocupan el alto de la pantalla como las internas (inicio,
+  listado, nuevo reclamo y Mi cuenta) y escalan con la raíz tipográfica en
+  pantallas grandes. «Mis reclamos» usa filas con la etapa en vez de tarjetas, y
+  Mi cuenta suma las preferencias de aviso por correo (solo demostración).
+- La píldora «En gestión» deja el relleno oscuro y usa el tono de marca, para
+  que no destaque más que los estados que piden una acción.
+
 ## Propuesta: login y portal del cliente
 
 El acceso está en `/login`. El perfil se detecta con el correo y la contraseña,
 y cada usuario entra a su vista correspondiente.
 
-| Perfil | Usuario | Contraseña |
-| --- | --- | --- |
-| Cliente | `cliente@demo.local` | `Reclamos2026!` |
-| Cliente | `valentina@demo.local` | `Reclamos2026!` |
-| Cliente | `cliente2@demo.local` | `Reclamos2026!` |
-| Supervisor | `supervisor@demo.local` | `Reclamos2026!` |
+| Perfil      | Usuario                  | Contraseña      |
+| ----------- | ------------------------ | --------------- |
+| Cliente     | `cliente@demo.local`     | `Reclamos2026!` |
+| Cliente     | `valentina@demo.local`   | `Reclamos2026!` |
+| Cliente     | `cliente2@demo.local`    | `Reclamos2026!` |
+| Supervisor  | `supervisor@demo.local`  | `Reclamos2026!` |
 | Funcionario | `funcionario@demo.local` | `Reclamos2026!` |
 
 Son cuentas de ejemplo del frontend; la autenticación con backend sigue pendiente.

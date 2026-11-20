@@ -10,6 +10,8 @@ export type EventoHistorial = {
   titulo: string
   detalle: string
   tipo: TipoEvento
+  /** Pide antecedentes al consumidor: el portal lo muestra como solicitud. */
+  solicitud?: boolean
 }
 
 export type DetalleReclamo = {

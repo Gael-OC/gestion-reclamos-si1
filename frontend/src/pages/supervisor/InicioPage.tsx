@@ -15,7 +15,8 @@ import {
 import { useReclamosDemo } from '@/features/reclamos/demo/context'
 import { PlazosEnRiesgo } from '@/features/supervision/PlazosEnRiesgo'
 import { DESTINOS_ETAPAS } from '@/features/supervision/destinos'
-import { BANDEJA, EQUIPO, SIN_ASIGNAR } from '@/features/supervision/escenario'
+import { EQUIPO, SIN_ASIGNAR } from '@/features/supervision/escenario'
+import { useBandeja } from '@/features/supervision/useBandeja'
 import { cn } from '@/lib/cn'
 import { enDias } from '@/lib/format'
 import { fechaLarga, hoy, mesActual, saludo } from '@/lib/fechas'
@@ -25,6 +26,12 @@ const iniciales = (nombre: string) =>
     .split(' ')
     .map((parte) => parte[0])
     .join('')
+
+/** «Diego Muñoz» → «Diego M.», para rótulos cortos que se lean completos. */
+const nombreCorto = (nombre: string) => {
+  const [nombrePila, apellido] = nombre.split(' ')
+  return apellido ? `${nombrePila} ${apellido[0]}.` : nombrePila
+}
 
 function Tarea({
   to,
@@ -49,24 +56,22 @@ function Tarea({
       <span className="flex items-center gap-3">
         {icono}
         <span className="min-w-0 flex-1 font-medium">{titulo}</span>
-        <span className="grid size-9 place-items-center rounded-full border border-glass-rim bg-glass-strong transition-transform duration-300 ease-spring group-hover:translate-x-0.5">
-          <ArrowRight size={15} strokeWidth={1.8} aria-hidden />
-        </span>
+        <ArrowRight
+          size={16}
+          strokeWidth={1.8}
+          aria-hidden
+          className="shrink-0 text-ink-muted transition-transform duration-300 ease-spring group-hover:translate-x-0.5 group-hover:text-ink"
+        />
       </span>
       <span
         aria-hidden
-        className="flex min-h-14 flex-1 items-center justify-center pt-5"
+        className="flex min-h-14 flex-1 items-center justify-center pt-3"
       >
         {children}
       </span>
       <span className="flex min-w-0 items-baseline gap-2.5">
         <span className="text-metric">{cifra}</span>
-        <span
-          className="min-w-0 truncate text-caption text-ink-muted"
-          title={detalle}
-        >
-          {detalle}
-        </span>
+        <span className="min-w-0 text-caption text-ink-muted">{detalle}</span>
       </span>
     </Link>
   )
@@ -76,11 +81,23 @@ function Tarea({
 export function InicioPage() {
   const navigate = useNavigate()
   const { activos } = useReclamosDemo()
+  const { nuevos, antecedentes, equipo } = useBandeja()
   const [etapa1, etapa2, etapa3] = activos.etapas
-  const porCarga = [...EQUIPO].sort((a, b) => b.activos - a.activos)
+  const porCarga = [...equipo].sort((a, b) => b.activos - a.activos)
   const masCarga = porCarga[0]
-  const porVencidos = [...EQUIPO].sort((a, b) => b.vencidos - a.vencidos)
-  const porRevisar = BANDEJA.nuevos + BANDEJA.antecedentes
+  const porVencidos = [
+    ...EQUIPO.map((persona) => ({
+      id: persona.id,
+      nombre: nombreCorto(persona.nombre),
+      n: persona.vencidos,
+    })),
+    { id: 'sin-asignar', nombre: 'Sin asignar', n: SIN_ASIGNAR.vencidos },
+  ].sort((a, b) => b.n - a.n)
+  const masVencidos = porVencidos.slice(0, 3)
+  const restoVencidos = porVencidos
+    .slice(3)
+    .reduce((total, fila) => total + fila.n, 0)
+  const porRevisar = nuevos + antecedentes
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 compact:gap-3">
@@ -188,11 +205,8 @@ export function InicioPage() {
             >
               <span className="flex w-full flex-col gap-2.5 text-caption">
                 {[
-                  { label: 'Nuevos', value: BANDEJA.nuevos },
-                  {
-                    label: 'Con antecedentes recibidos',
-                    value: BANDEJA.antecedentes,
-                  },
+                  { label: 'Nuevos', value: nuevos },
+                  { label: 'Antecedentes recibidos', value: antecedentes },
                 ].map((fila) => (
                   <span key={fila.label} className="flex flex-col gap-1">
                     <span className="flex justify-between">
@@ -203,7 +217,7 @@ export function InicioPage() {
                       <span
                         className="block h-full rounded-full bg-linear-to-r from-brand-glow to-brand"
                         style={{
-                          width: `${Math.max(4, (fila.value / BANDEJA.nuevos) * 100)}%`,
+                          width: `${Math.max(4, (fila.value / Math.max(1, nuevos, antecedentes)) * 100)}%`,
                         }}
                       />
                     </span>
@@ -221,32 +235,18 @@ export function InicioPage() {
               }
               titulo="Seguir vencidos"
               cifra={String(alertasPlazo.vencidos)}
-              detalle="vencidos · cada punto es un caso"
+              detalle="casos vencidos"
             >
-              <span className="grid w-full grid-cols-2 gap-x-3 gap-y-1.5">
-                {[
-                  ...porVencidos.map((persona) => ({
-                    id: persona.id,
-                    nombre: persona.nombre,
-                    n: persona.vencidos,
-                  })),
-                  {
-                    id: 'sin-asignar',
-                    nombre: 'Sin asignar',
-                    n: SIN_ASIGNAR.vencidos,
-                  },
-                ].map((fila) => (
+              <span className="flex w-full flex-col gap-2 text-caption">
+                {masVencidos.map((fila) => (
                   <span
                     key={fila.id}
-                    title={`${fila.nombre} · ${fila.n} vencidos`}
-                    className="flex min-w-0 items-center gap-2"
+                    className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-2"
                   >
-                    {fila.id === 'sin-asignar' ? (
-                      <span className="size-[22px] shrink-0 rounded-full border border-dashed border-ink-muted/50" />
-                    ) : (
-                      <Avatar name={fila.nombre} size={22} />
-                    )}
-                    <span className="flex min-w-0 flex-wrap gap-0.5">
+                    <span className="truncate text-ink-muted">
+                      {fila.nombre}
+                    </span>
+                    <span className="flex flex-wrap gap-[3px]">
                       {Array.from({ length: fila.n }, (_, index) => (
                         <span
                           key={index}
@@ -254,15 +254,21 @@ export function InicioPage() {
                         />
                       ))}
                     </span>
+                    <span className="font-medium tabular-nums">{fila.n}</span>
                   </span>
                 ))}
+                {restoVencidos > 0 && (
+                  <span className="text-ink-muted">
+                    y {restoVencidos} más en el resto del equipo
+                  </span>
+                )}
               </span>
             </Tarea>
 
             <Tarea
               to="/supervisor/equipo"
               icono={<Avatar name={masCarga.nombre} size={40} />}
-              titulo="Equilibrar la carga"
+              titulo="Equilibrar carga"
               cifra={String(masCarga.activos)}
               detalle={`casos de ${masCarga.nombre}`}
             >
@@ -289,7 +295,7 @@ export function InicioPage() {
                     />
                     <span
                       className={cn(
-                        'text-axis',
+                        'text-caption font-medium',
                         index === 0 ? 'text-ink' : 'text-ink-muted',
                       )}
                     >

@@ -6,7 +6,7 @@ import { SearchField } from '@/components/ui/SearchField'
 import { SelectField } from '@/components/ui/SelectField'
 import { Button } from '@/components/ui/Button'
 import { useMisReclamos } from '@/features/cliente/useMisReclamos'
-import { ReclamoClienteCard } from '@/features/cliente/ReclamoClienteCard'
+import { ReclamoClienteFila } from '@/features/cliente/ReclamoClienteFila'
 import { estaActivo } from '@/features/cliente/model'
 import { ESTADOS } from '@/features/reclamos/estados'
 import { normalizarBusqueda } from '@/features/reclamos/listado/model'
@@ -48,7 +48,7 @@ export function ClienteReclamosPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-6 compact:gap-5">
       <PageHeading
         title="Mis reclamos"
         subtitle="Consulta el estado y las novedades de tus casos"
@@ -90,66 +90,70 @@ export function ClienteReclamosPage() {
           ]}
         />
       </Glass>
-      <p
-        role="status"
-        aria-live="polite"
-        className="px-1 text-caption text-ink-muted"
-      >
-        {rows.length}{' '}
-        {rows.length === 1 ? 'reclamo encontrado' : 'reclamos encontrados'}
-      </p>
-      {rows.length ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {rows.slice(start, start + PAGE_SIZE).map((row) => (
-            <ReclamoClienteCard key={row.id} reclamo={row} />
-          ))}
-        </div>
-      ) : (
-        <Glass className="flex flex-col items-center gap-3 py-12 text-center">
-          <SearchX
-            size={32}
-            strokeWidth={1.5}
-            className="text-ink-muted"
-            aria-hidden
-          />
-          <h2 className="text-title">No hay reclamos para mostrar</h2>
-          <p className="text-body text-ink-muted">
-            Tus casos aparecerán aquí al registrarlos. También puedes revisar
-            los filtros.
-          </p>
-          {(buscar || estado) && (
-            <Button onClick={() => setParams({})}>Limpiar filtros</Button>
-          )}
-        </Glass>
-      )}
-      {pages > 1 && (
-        <nav
-          aria-label="Paginación de mis reclamos"
-          className="flex flex-wrap items-center justify-between gap-3"
+      <Glass className="flex flex-1 flex-col">
+        <p
+          role="status"
+          aria-live="polite"
+          className="px-1 pb-4 text-caption text-ink-muted"
         >
-          <p className="text-caption text-ink-muted">
-            Página {page} de {pages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              icon={ChevronLeft}
-              disabled={page === 1}
-              onClick={() => actualizar('pagina', String(page - 1))}
-            >
-              Anterior
-            </Button>
-            <Button
-              size="sm"
-              iconRight={ChevronRight}
-              disabled={page === pages}
-              onClick={() => actualizar('pagina', String(page + 1))}
-            >
-              Siguiente
-            </Button>
+          {rows.length}{' '}
+          {rows.length === 1 ? 'reclamo encontrado' : 'reclamos encontrados'}
+        </p>
+        {rows.length ? (
+          <ul className="flex flex-col divide-y divide-glass-shade">
+            {rows.slice(start, start + PAGE_SIZE).map((row) => (
+              <li key={row.id}>
+                <ReclamoClienteFila reclamo={row} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-12 text-center">
+            <SearchX
+              size={32}
+              strokeWidth={1.5}
+              className="text-ink-muted"
+              aria-hidden
+            />
+            <h2 className="text-title">No hay reclamos para mostrar</h2>
+            <p className="text-body text-ink-muted">
+              Tus casos aparecerán aquí al registrarlos. También puedes revisar
+              los filtros.
+            </p>
+            {(buscar || estado) && (
+              <Button onClick={() => setParams({})}>Limpiar filtros</Button>
+            )}
           </div>
-        </nav>
-      )}
+        )}
+        {pages > 1 && (
+          <nav
+            aria-label="Paginación de mis reclamos"
+            className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-glass-shade pt-4"
+          >
+            <p className="text-caption text-ink-muted">
+              Página {page} de {pages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                icon={ChevronLeft}
+                disabled={page === 1}
+                onClick={() => actualizar('pagina', String(page - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                size="sm"
+                iconRight={ChevronRight}
+                disabled={page === pages}
+                onClick={() => actualizar('pagina', String(page + 1))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </nav>
+        )}
+      </Glass>
     </div>
   )
 }

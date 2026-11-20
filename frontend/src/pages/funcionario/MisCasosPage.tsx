@@ -6,7 +6,7 @@ import { PageHeading } from '@/components/layout/PageHeading'
 import { LiquidOrbs } from '@/features/dashboard/LiquidOrbs'
 import { PlazoRing } from '@/features/reclamos/PlazoRing'
 import { textoPlazo, tonoPlazo } from '@/features/reclamos/plazo'
-import { MI_MES, MIS_CASOS, PRIORIDAD } from '@/features/funcionario/escenario'
+import { useMisCasos } from '@/features/funcionario/useMisCasos'
 import { cn } from '@/lib/cn'
 import { fechaLarga, hoy, mesActual } from '@/lib/fechas'
 
@@ -30,22 +30,26 @@ const DESTINOS_PLAZOS = [
 
 export function MisCasosPage() {
   const navigate = useNavigate()
-  const conMargen = MIS_CASOS.activos - MIS_CASOS.vencidos - MIS_CASOS.porVencer
-  const enPlazo = Math.round((MI_MES.enPlazo / MI_MES.cierres) * 100)
-  const urgente = PRIORIDAD[0]
+  const misCasos = useMisCasos()
+  const { prioridad, mes } = misCasos
+  const conMargen = misCasos.activos - misCasos.vencidos - misCasos.porVencer
+  const enPlazo = Math.round((mes.enPlazo / mes.cierres) * 100)
+  const urgente = prioridad[0]
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 compact:gap-3">
       <PageHeading
-        title={`Hola, ${MIS_CASOS.nombre.split(' ')[0]}`}
-        subtitle={`Tiene ${MIS_CASOS.activos} casos · corte al ${fechaLarga(hoy())}`}
+        title={`Hola, ${misCasos.nombre.split(' ')[0]}`}
+        subtitle={`Tiene ${misCasos.activos} casos · corte al ${fechaLarga(hoy())}`}
         action={
-          <Link
-            to={`/funcionario/casos/${urgente.id}`}
-            className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-6 text-label text-on-ink shadow-ink hover:bg-ink-soft"
-          >
-            Abrir el más urgente <ArrowRight size={16} aria-hidden />
-          </Link>
+          urgente && (
+            <Link
+              to={`/funcionario/casos/${urgente.id}`}
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-6 text-label text-on-ink shadow-ink hover:bg-ink-soft"
+            >
+              Abrir el más urgente <ArrowRight size={16} aria-hidden />
+            </Link>
+          )
         }
       />
       <div className="grid flex-1 gap-6 *:min-w-0 md:grid-cols-2 lg:grid-cols-3 tall:min-h-0 tall:grid-rows-[1.35fr_1fr] compact:gap-5">
@@ -62,8 +66,8 @@ export function MisCasosPage() {
           }
           className="flex flex-col md:col-span-2 tall:min-h-0 compact:p-4 [&>header]:mb-2"
         >
-          <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-            {PRIORIDAD.map((caso) => (
+          <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-6 [mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)]">
+            {prioridad.map((caso) => (
               <li key={caso.id}>
                 <Link
                   to={`/funcionario/casos/${caso.id}`}
@@ -107,9 +111,9 @@ export function MisCasosPage() {
           <div className="relative min-h-[120px] flex-1">
             <LiquidOrbs
               items={[
-                { label: 'vencidos', value: MIS_CASOS.vencidos },
+                { label: 'vencidos', value: misCasos.vencidos },
                 { label: 'con margen', value: conMargen },
-                { label: 'por vencer', value: MIS_CASOS.porVencer },
+                { label: 'por vencer', value: misCasos.porVencer },
               ]}
               tones={['danger', 'warning']}
               onSelect={(index) => navigate(DESTINOS_PLAZOS[index])}
@@ -149,7 +153,7 @@ export function MisCasosPage() {
             <span className="flex flex-col gap-2.5">
               <span className="glass-tile px-3.5 py-2.5">
                 <span className="block text-title">
-                  {MI_MES.enPlazo} de {MI_MES.cierres}
+                  {mes.enPlazo} de {mes.cierres}
                 </span>
                 <span className="text-caption text-ink-muted">
                   cierres en plazo · KPI 3
@@ -157,7 +161,7 @@ export function MisCasosPage() {
               </span>
               <span className="glass-tile px-3.5 py-2.5">
                 <span className="block text-title">
-                  {MI_MES.resolucion.at(-1)?.toLocaleString('es-CL')} días
+                  {mes.resolucion.at(-1)?.toLocaleString('es-CL')} días
                 </span>
                 <span className="text-caption text-ink-muted">
                   de resolución · KPI 1
@@ -174,12 +178,12 @@ export function MisCasosPage() {
           <div
             className="grid flex-1 gap-3"
             style={{
-              gridTemplateColumns: MIS_CASOS.etapas
+              gridTemplateColumns: misCasos.etapas
                 .map((etapa) => `minmax(9rem, ${etapa.value}fr)`)
                 .join(' '),
             }}
           >
-            {MIS_CASOS.etapas.map((etapa) => (
+            {misCasos.etapas.map((etapa) => (
               <Link
                 key={etapa.estado}
                 to={`/reclamos?alcance=mios&estado=${etapa.estado}`}

@@ -17,7 +17,8 @@ import { TextField } from '@/components/ui/TextField'
 import { EstadoBadge } from '../EstadoBadge'
 import { useReclamosDemo } from '../demo/context'
 import { MERCADOS } from '../listado/mockData'
-import { fechaLarga, hoy } from '@/lib/fechas'
+import { fechaLarga, hoy, sumarDias } from '@/lib/fechas'
+import { PLAZO_DIAS } from '../estados'
 import { type NuevoReclamoDatos, type ReclamoListado } from '../listado/model'
 import { validarNuevoReclamo } from './validacion'
 
@@ -36,12 +37,9 @@ const vacio: NuevoReclamoDatos = {
   comuna: '',
   descripcion: '',
 }
-const avisoDatosFicticios =
-  'Datos ficticios. Los registros se reinician al recargar la página.'
-
-export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
+/** Formulario del portal: el consumidor registra su reclamo (inicio del BPMN). */
+export function ReclamoForm() {
   const navigate = useNavigate()
-  const rutaListado = cliente ? '/portal/reclamos' : '/reclamos'
   const { registrar } = useReclamosDemo()
   const [datos, setDatos] = useState<NuevoReclamoDatos>(vacio)
   const [errores, setErrores] = useState<
@@ -89,22 +87,19 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <EstadoBadge estado="ingresado" />
-            <span className="pill pill-neutral">Sin asignar</span>
+            <span className="pill pill-neutral">
+              Fecha límite {fechaLarga(sumarDias(hoy(), PLAZO_DIAS))}
+            </span>
           </div>
           <p className="mt-6 text-caption text-ink-muted">
-            El caso se añadió al listado.
+            La supervisión revisará los antecedentes. Verás cada novedad en Mis
+            reclamos.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button
               variant="ink"
               iconRight={ArrowUpRight}
-              onClick={() =>
-                navigate(
-                  cliente
-                    ? `${rutaListado}/${registrado.id}`
-                    : `${rutaListado}?buscar=${registrado.id}`,
-                )
-              }
+              onClick={() => navigate(`/portal/reclamos/${registrado.id}`)}
             >
               Ver reclamo
             </Button>
@@ -119,11 +114,6 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
               Registrar otro
             </Button>
           </div>
-          {!cliente && (
-            <p className="mt-6 border-t border-glass-shade pt-4 text-caption text-ink-muted">
-              {avisoDatosFicticios}
-            </p>
-          )}
         </Glass>
       </div>
     )
@@ -133,11 +123,11 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
     <form
       noValidate
       onSubmit={enviar}
-      className={`grid min-h-0 flex-1 gap-6 lg:grid-cols-3 ${cliente ? '' : 'tall:grid-rows-[minmax(0,1fr)]'} compact:gap-5`}
+      className="grid min-h-0 flex-1 gap-6 lg:grid-cols-3 compact:gap-5"
     >
       <Glass
         title="Antecedentes del reclamo"
-        subtitle="Complete los campos marcados con *"
+        subtitle="Completa los campos marcados con *"
         className="flex min-h-0 flex-col lg:col-span-2 compact:p-4"
       >
         <div className="min-h-0 flex-1 tall:overflow-y-auto tall:pr-1">
@@ -174,7 +164,7 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
               value={datos.comuna}
               onValueChange={(value) => cambiar('comuna', value)}
               options={[
-                { value: '', label: 'Seleccione una comuna' },
+                { value: '', label: 'Selecciona una comuna' },
                 ...comunas.map((value) => ({ value, label: value })),
               ]}
               required
@@ -186,7 +176,7 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
               value={datos.mercado}
               onValueChange={(value) => cambiar('mercado', value)}
               options={[
-                { value: '', label: 'Seleccione un mercado' },
+                { value: '', label: 'Selecciona un mercado' },
                 ...MERCADOS.map((value) => ({ value, label: value })),
               ]}
               required
@@ -198,7 +188,7 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
               label="Descripción"
               value={datos.descripcion}
               onValueChange={(value) => cambiar('descripcion', value)}
-              placeholder="Describa lo ocurrido y qué solución solicita."
+              placeholder="Describe lo ocurrido y qué solución solicitas."
               multiline
               maxLength={2000}
               required
@@ -212,7 +202,7 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
           <Button
             variant="ghost"
             icon={ArrowLeft}
-            onClick={() => navigate(rutaListado)}
+            onClick={() => navigate('/portal/reclamos')}
           >
             Cancelar
           </Button>
@@ -233,7 +223,7 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
               <FileText size={18} strokeWidth={1.6} aria-hidden />
             </span>
             <p className="break-words text-title">
-              {datos.asunto.trim() || 'Su nuevo reclamo'}
+              {datos.asunto.trim() || 'Tu nuevo reclamo'}
             </p>
             <p className="mt-2 flex items-start gap-2 break-words text-caption text-ink-muted">
               <Building2
@@ -267,8 +257,10 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
               </dd>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <dt className="text-caption text-ink-muted">Responsable</dt>
-              <dd className="text-label">Sin asignar</dd>
+              <dt className="text-caption text-ink-muted">Fecha límite</dt>
+              <dd className="text-label">
+                {fechaLarga(sumarDias(hoy(), PLAZO_DIAS))}
+              </dd>
             </div>
             <div className="flex items-center justify-between gap-2">
               <dt className="text-caption text-ink-muted">Fecha de ingreso</dt>
@@ -279,11 +271,6 @@ export function ReclamoForm({ cliente = false }: { cliente?: boolean }) {
             </div>
           </dl>
         </div>
-        {!cliente && (
-          <p className="mt-auto border-t border-glass-shade pt-4 text-caption text-ink-muted">
-            {avisoDatosFicticios}
-          </p>
-        )}
       </Glass>
     </form>
   )

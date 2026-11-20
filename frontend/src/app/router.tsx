@@ -9,7 +9,6 @@ import {
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AppShell } from '@/components/layout/AppShell'
 import { ReclamosPage } from '@/pages/ReclamosPage'
-import { NuevoReclamoPage } from '@/pages/NuevoReclamoPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { ReclamosDemoProvider } from '@/features/reclamos/demo/ReclamosDemoProvider'
@@ -172,7 +171,7 @@ export function AppRouter() {
                     <Route element={<RequireRole roles={['supervisor']} />}>
                       <Route
                         path="/reclamos/nuevo"
-                        element={<NuevoReclamoPage />}
+                        element={<Navigate to="/supervisor/bandeja" replace />}
                       />
                       <Route
                         path="/reclamos/:reclamoId"

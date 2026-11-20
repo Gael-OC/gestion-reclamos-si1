@@ -18,6 +18,8 @@ type SideRailProps = {
   usuario: string
   onSalir: () => void
   mostrarNotificaciones?: boolean
+  /** Mantiene el riel centrado en pantalla en vistas con desplazamiento. */
+  fija?: boolean
 }
 
 const tooltip =
@@ -27,13 +29,21 @@ export function SideRail({
   items,
   usuario,
   onSalir,
-  mostrarNotificaciones = true,
+  mostrarNotificaciones = false,
+  fija = false,
 }: SideRailProps) {
   const id = useId()
   const reduce = useReducedMotion()
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-40 lg:relative lg:inset-auto lg:self-center">
+    <div
+      className={cn(
+        'fixed inset-x-4 bottom-4 z-40 lg:inset-auto',
+        fija
+          ? 'lg:sticky lg:top-0 lg:-my-8 lg:flex lg:h-dvh lg:items-center lg:self-start compact:-my-5'
+          : 'lg:relative lg:self-center',
+      )}
+    >
       <nav
         aria-label="Navegación principal"
         className={cn(

@@ -140,7 +140,11 @@ export function eventosParaCliente(
       titulo: evento.titulo,
       descripcion: evento.detalle,
       registradoEn: evento.registradoEn,
-      tipo: evento.titulo.startsWith('Caso cerrado') ? 'resultado' : 'gestion',
+      tipo: evento.solicitud
+        ? 'solicitud'
+        : /^(Caso cerrado|Reclamo anulado)/.test(evento.titulo)
+          ? 'resultado'
+          : 'gestion',
     }
   })
 }

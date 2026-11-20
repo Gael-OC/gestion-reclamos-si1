@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router'
 import {
   ArrowLeft,
+  Ban,
   Building2,
   CircleCheck,
   FileText,
@@ -15,18 +16,8 @@ import { fechaVisible } from '@/features/reclamos/listado/model'
 import { useMisReclamos } from '@/features/cliente/useMisReclamos'
 import { estaActivo, requiereAntecedentes } from '@/features/cliente/model'
 import { AportarAntecedentes } from '@/features/cliente/AportarAntecedentes'
+import { ETAPAS, indiceEtapa } from '@/features/cliente/etapas'
 import { cn } from '@/lib/cn'
-
-const etapas = ['Registrado', 'Asignado', 'En gestión', 'Respuesta', 'Cierre']
-const indiceEstado = {
-  ingresado: 0,
-  pendiente_antecedentes: 0,
-  asignado: 1,
-  en_gestion: 2,
-  esperando_empresa: 3,
-  cerrado: 4,
-  anulado: -1,
-}
 
 export function ClienteDetallePage() {
   const { reclamoId } = useParams()
@@ -58,7 +49,7 @@ export function ClienteDetallePage() {
   const eventos = seguimiento(reclamo)
   const ficha = detalle(reclamo.id)
   const pendiente = requiereAntecedentes(reclamo, eventos)
-  const etapaActual = indiceEstado[reclamo.estado]
+  const etapaActual = indiceEtapa(reclamo.estado)
   return (
     <div className="flex flex-col gap-6">
       {volver}
@@ -84,7 +75,7 @@ export function ClienteDetallePage() {
             aria-label="Etapas del reclamo"
             className="mt-7 grid grid-cols-5 gap-2 border-t border-glass-shade pt-5"
           >
-            {etapas.map((label, index) => (
+            {ETAPAS.map((label, index) => (
               <li
                 key={label}
                 aria-current={index === etapaActual ? 'step' : undefined}
@@ -134,13 +125,25 @@ export function ClienteDetallePage() {
       )}
       {reclamo.resultado && (
         <Glass className="flex items-start gap-3">
-          <CircleCheck
-            size={23}
-            className="mt-0.5 shrink-0 text-success"
-            aria-hidden
-          />
+          {reclamo.estado === 'anulado' ? (
+            <Ban
+              size={23}
+              className="mt-0.5 shrink-0 text-ink-muted"
+              aria-hidden
+            />
+          ) : (
+            <CircleCheck
+              size={23}
+              className="mt-0.5 shrink-0 text-success"
+              aria-hidden
+            />
+          )}
           <div>
-            <h2 className="text-title">Resultado del reclamo</h2>
+            <h2 className="text-title">
+              {reclamo.estado === 'anulado'
+                ? 'Reclamo anulado'
+                : 'Resultado del reclamo'}
+            </h2>
             <p className="mt-2 text-body text-ink-muted">{reclamo.resultado}</p>
           </div>
         </Glass>

@@ -23,7 +23,7 @@ export function Historial({ eventos, className }: HistorialProps) {
     <ol className={cn('flex flex-col', className)}>
       {eventos.map((evento, index) => (
         <li
-          key={`${evento.fecha}-${evento.titulo}`}
+          key={`${index}-${evento.registradoEn ?? evento.fecha}-${evento.titulo}`}
           className="relative grid grid-cols-[3.75rem_1.375rem_minmax(0,1fr)] gap-3 pb-4 last:pb-0"
         >
           {index < eventos.length - 1 && (

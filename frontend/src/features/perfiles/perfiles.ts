@@ -33,7 +33,7 @@ export const USUARIOS: Record<
 export const NAV: Record<Perfil, NavItem[]> = {
   supervisor: [
     { to: '/supervisor', label: 'Inicio', icon: ChartPie, end: true },
-    { to: '/supervisor/bandeja', label: 'Bandeja', icon: Inbox, badge: 34 },
+    { to: '/supervisor/bandeja', label: 'Bandeja', icon: Inbox },
     { to: '/reclamos', label: 'Reclamos', icon: FileSearch },
     { to: '/supervisor/equipo', label: 'Equipo', icon: Users },
     { to: '/supervisor/indicadores', label: 'Indicadores', icon: ChartColumn },
@@ -50,7 +50,6 @@ export const NAV: Record<Perfil, NavItem[]> = {
       label: 'Mis casos',
       icon: BriefcaseBusiness,
       end: true,
-      badge: 10,
     },
     {
       to: '/reclamos?alcance=mios',

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
 import {
   Ban,
   CircleCheck,
@@ -18,7 +18,8 @@ import { PageHeading } from '@/components/layout/PageHeading'
 import { EstadoBadge } from '@/features/reclamos/EstadoBadge'
 import { PlazoChip } from '@/features/reclamos/PlazoChip'
 import { PlazoRing } from '@/features/reclamos/PlazoRing'
-import { BANDEJA, EQUIPO } from '@/features/supervision/escenario'
+import { useBandeja } from '@/features/supervision/useBandeja'
+import { useReclamosDemo } from '@/features/reclamos/demo/context'
 import { cn } from '@/lib/cn'
 import { diaRelativo } from '@/lib/fechas'
 import { PLAZO_DIAS } from '@/features/reclamos/estados'
@@ -68,20 +69,19 @@ const MOTIVOS = [
   { value: 'duplicado', label: 'Duplicado' },
 ]
 
-const porCarga = [...EQUIPO].sort((a, b) => a.activos - b.activos)
-
 /**
  * Bandeja de revisión del supervisor: elegir un ingreso y decidir entre
  * asignarlo, pedir antecedentes o anularlo (actividades 2 a 6 del BPMN).
  */
 export function BandejaPage() {
-  const [tipo, setTipo] = useState<Tipo>('nuevo')
-  const [resueltos, setResueltos] = useState<string[]>([])
-  const pendientes = BANDEJA.ingresos.filter(
-    (item) => !resueltos.includes(item.id),
-  )
+  const [params] = useSearchParams()
+  const { registrarGestion } = useReclamosDemo()
+  const { ingresos: pendientes, equipo } = useBandeja()
+  const porCarga = [...equipo].sort((a, b) => a.activos - b.activos)
+  const pedido = pendientes.find((item) => item.id === params.get('caso'))
+  const [tipo, setTipo] = useState<Tipo>(pedido?.tipo ?? 'nuevo')
   const lista = pendientes.filter((item) => item.tipo === tipo)
-  const [selId, setSelId] = useState(lista[0]?.id)
+  const [selId, setSelId] = useState(pedido?.id ?? lista[0]?.id)
   const sel = lista.find((item) => item.id === selId) ?? lista[0]
 
   const [decision, setDecision] = useState<Decision>('asignar')
@@ -89,21 +89,28 @@ export function BandejaPage() {
   const [verTodos, setVerTodos] = useState(false)
   const [faltan, setFaltan] = useState<string[]>(['boleta'])
   const [mensaje, setMensaje] = useState(
-    'Adjunte la boleta y, si la tiene, la respuesta de la empresa a su solicitud.',
+    'Adjunta la boleta y, si la tienes, la respuesta de la empresa a tu solicitud.',
   )
   const [motivo, setMotivo] = useState<string[]>([])
   const [explicacion, setExplicacion] = useState('')
   const [intento, setIntento] = useState(false)
   const [aviso, setAviso] = useState('')
 
-  const resueltosTipo = (t: Tipo) =>
-    BANDEJA.ingresos.filter((i) => i.tipo === t && resueltos.includes(i.id))
-      .length
+  // Si se llega con ?caso=, muestra ese reclamo en la lista aunque esté abajo.
+  useEffect(() => {
+    document
+      .querySelector(
+        '[aria-label="Reclamos por revisar"] [aria-current="true"]',
+      )
+      ?.scrollIntoView({ block: 'nearest' })
+  }, [])
+
   const totalTipo = {
-    nuevo: BANDEJA.nuevos - resueltosTipo('nuevo'),
-    antecedentes: BANDEJA.antecedentes - resueltosTipo('antecedentes'),
+    nuevo: pendientes.filter((item) => item.tipo === 'nuevo').length,
+    antecedentes: pendientes.filter((item) => item.tipo === 'antecedentes')
+      .length,
   }
-  const destino = EQUIPO.find((persona) => persona.id === destinoId)!
+  const destino = porCarga.find((persona) => persona.id === destinoId)!
   const sugeridos = verTodos ? porCarga : porCarga.slice(0, 3)
 
   const errores = {
@@ -141,7 +148,48 @@ export function BandejaPage() {
       pedir: `Se pidieron antecedentes para ${sel.id}. Volverá a la bandeja cuando el consumidor responda.`,
       anular: `${sel.id} quedó anulado y fuera de los indicadores.`,
     }[decision]
-    setResueltos((prev) => [...prev, sel.id])
+    const motivoTexto =
+      MOTIVOS.find((item) => item.value === motivo[0])?.label ?? ''
+    const faltantes = FALTANTES.filter((item) => faltan.includes(item.value))
+      .map((item) => item.label.toLowerCase())
+      .join(', ')
+    const registrado = {
+      asignar: () =>
+        registrarGestion(
+          sel.id,
+          {
+            fecha: diaRelativo(0),
+            titulo: `Asignado a ${destino.nombre}`,
+            detalle: 'Andrea Fuentes · antecedentes completos',
+            tipo: 'gestion',
+          },
+          { estado: 'asignado', responsableId: destino.id },
+        ),
+      pedir: () =>
+        registrarGestion(
+          sel.id,
+          {
+            fecha: diaRelativo(0),
+            titulo: 'Necesitamos más antecedentes',
+            detalle: `${mensaje.trim()} (Falta: ${faltantes}.)`,
+            tipo: 'gestion',
+            solicitud: true,
+          },
+          { estado: 'pendiente_antecedentes' },
+        ),
+      anular: () =>
+        registrarGestion(
+          sel.id,
+          {
+            fecha: diaRelativo(0),
+            titulo: `Reclamo anulado · ${motivoTexto}`,
+            detalle: explicacion.trim(),
+            tipo: 'gestion',
+          },
+          { estado: 'anulado', resultado: explicacion.trim() },
+        ),
+    }[decision]()
+    if (!registrado) return
     setAviso(texto)
     const siguiente = lista.find((item) => item.id !== sel.id)
     if (siguiente) elegir(siguiente.id)
@@ -172,6 +220,7 @@ export function BandejaPage() {
               setTipo(value)
               const primero = pendientes.find((item) => item.tipo === value)
               if (primero) elegir(primero.id)
+              setAviso('')
             }}
             options={[
               { value: 'nuevo', label: `Nuevos · ${totalTipo.nuevo}` },
@@ -239,7 +288,7 @@ export function BandejaPage() {
                           : `${item.dias} días`}
                     </span>
                   </span>
-                  <span className="block truncate font-medium">
+                  <span className="line-clamp-2 font-medium">
                     {item.asunto}
                   </span>
                   <span className="text-caption text-ink-muted">
@@ -251,7 +300,7 @@ export function BandejaPage() {
           })}
           {lista.length === 0 && (
             <p className="p-4 text-caption text-ink-muted">
-              No quedan ingresos en esta muestra.
+              No hay reclamos por revisar en esta pestaña.
             </p>
           )}
           <Link
@@ -295,6 +344,14 @@ export function BandejaPage() {
             <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
               <div className="glass-tile flex flex-col gap-2.5 px-4 py-3.5">
                 <p>{sel.relato}</p>
+                {sel.respuesta && (
+                  <p className="border-l-2 border-brand/40 pl-3 text-ink-muted">
+                    <span className="block text-caption font-medium text-ink">
+                      Respuesta del consumidor
+                    </span>
+                    {sel.respuesta}
+                  </p>
+                )}
                 {sel.adjuntos.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {sel.adjuntos.map((archivo) => (
@@ -535,9 +592,9 @@ export function BandejaPage() {
                 className="mx-auto text-success"
                 aria-hidden
               />
-              <h2 className="mt-2 text-title">Revisó toda la muestra</h2>
+              <h2 className="mt-2 text-title">Bandeja al día</h2>
               <p className="text-caption text-ink-muted">
-                Los demás ingresos están en el listado de reclamos.
+                Los nuevos reclamos del portal aparecerán aquí.
               </p>
             </div>
           </Glass>

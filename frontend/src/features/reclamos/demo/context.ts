@@ -10,6 +10,8 @@ export type CambioGestion = Partial<
 
 type ReclamosDemo = {
   reclamos: ReclamoListado[]
+  /** Pendientes de antecedentes que el consumidor ya respondió. */
+  recibidos: string[]
   activos: typeof reclamosActivos
   resumenCarga: string
   registrar: (datos: NuevoReclamoDatos) => ReclamoListado

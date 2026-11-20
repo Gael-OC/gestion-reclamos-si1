@@ -1,43 +1,22 @@
-import {
-  ArrowRight,
-  CircleCheck,
-  Clock3,
-  FileText,
-  MessageSquareText,
-  Plus,
-} from 'lucide-react'
+import { ArrowRight, FileText, MessageSquareText, Plus } from 'lucide-react'
 import { Link } from 'react-router'
 import { Glass } from '@/components/ui/Glass'
 import { PageHeading } from '@/components/layout/PageHeading'
 import { useAuth } from '@/features/auth/context'
 import { useMisReclamos } from '@/features/cliente/useMisReclamos'
 import { ReclamoClienteCard } from '@/features/cliente/ReclamoClienteCard'
+import { ETAPAS, indiceEtapa } from '@/features/cliente/etapas'
+import { cn } from '@/lib/cn'
 
 export function ClienteInicioPage() {
   const { usuario } = useAuth()
   const { reclamos, activos, cerrados, pendientes } = useMisReclamos()
-  const stats = [
-    {
-      label: 'Mis reclamos',
-      count: reclamos.length,
-      icon: FileText,
-      to: '/portal/reclamos',
-    },
-    {
-      label: 'En seguimiento',
-      count: activos.length,
-      icon: Clock3,
-      to: '/portal/reclamos?estado=activos',
-    },
-    {
-      label: 'Cerrados',
-      count: cerrados.length,
-      icon: CircleCheck,
-      to: '/portal/reclamos?estado=cerrado',
-    },
-  ]
+  const porEtapa = ETAPAS.map((label, index) => ({
+    label,
+    reclamos: reclamos.filter((row) => indiceEtapa(row.estado) === index),
+  }))
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-6 compact:gap-5">
       <PageHeading
         title={`Hola, ${usuario?.nombre.split(' ')[0] ?? ''}`}
         action={
@@ -49,27 +28,62 @@ export function ClienteInicioPage() {
           </Link>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <Glass title="Resumen de mis reclamos">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {stats.map(({ label, count, icon: Icon, to }) => (
-              <Link
-                to={to}
-                key={label}
-                className="glass-tile flex flex-wrap items-center justify-between gap-3 rounded-md p-4 transition-colors hover:bg-glass-strong"
+      <div className="grid flex-1 gap-6 lg:grid-cols-[1.25fr_1fr] lg:grid-rows-[auto_minmax(0,1fr)] compact:gap-5">
+        <Glass
+          className="flex flex-col"
+          title="Dónde están tus reclamos"
+          subtitle={`${activos.length} en seguimiento · ${cerrados.length} ${cerrados.length === 1 ? 'cerrado' : 'cerrados'} · cada punto es un reclamo`}
+        >
+          <ol
+            aria-label="Reclamos por etapa"
+            className="grid flex-1 grid-cols-5 items-end gap-4"
+          >
+            {porEtapa.map((etapa) => (
+              <li
+                key={etapa.label}
+                className="flex min-w-0 flex-col gap-3 compact:gap-2"
               >
-                <div>
-                  <p className="text-caption text-ink-muted">{label}</p>
-                  <p className="mt-2 text-metric">{count}</p>
-                </div>
-                <span className="glass-tile grid size-12 place-items-center rounded-full text-brand">
-                  <Icon size={22} strokeWidth={1.5} aria-hidden />
+                <span
+                  className={cn(
+                    'text-metric',
+                    !etapa.reclamos.length && 'text-ink-muted/50',
+                  )}
+                >
+                  {etapa.reclamos.length}
                 </span>
-              </Link>
+                <span className="flex min-h-5 flex-wrap content-end gap-2">
+                  {etapa.reclamos.map((row) => (
+                    <Link
+                      key={row.id}
+                      to={`/portal/reclamos/${row.id}`}
+                      title={`${row.id} · ${row.asunto}`}
+                      aria-label={`${row.id}: ${row.asunto}`}
+                      className={cn(
+                        'size-5 rounded-full shadow-tile transition-transform hover:scale-125',
+                        row.estado === 'cerrado'
+                          ? 'bg-radial-[at_35%_30%] from-[color-mix(in_srgb,var(--color-success)_45%,white)] to-success'
+                          : 'bg-radial-[at_35%_30%] from-brand-glow to-brand',
+                      )}
+                    />
+                  ))}
+                </span>
+                <span
+                  aria-hidden
+                  className={cn(
+                    'h-2 rounded-full',
+                    etapa.reclamos.length
+                      ? 'bg-linear-to-r from-brand-glow to-brand'
+                      : 'bg-glass-shade',
+                  )}
+                />
+                <span className="truncate text-label text-ink-muted">
+                  {etapa.label}
+                </span>
+              </li>
             ))}
-          </div>
+          </ol>
         </Glass>
-        <Glass className="flex flex-col justify-center gap-4">
+        <Glass className="flex flex-col justify-center gap-5">
           {pendientes.length > 0 ? (
             <>
               <div className="flex items-start gap-3">
@@ -104,15 +118,15 @@ export function ClienteInicioPage() {
                 {activos.length
                   ? 'Seguimiento al día'
                   : reclamos.length
-                    ? 'Sus reclamos están cerrados'
+                    ? 'Tus reclamos están cerrados'
                     : 'Todavía no hay reclamos'}
               </h2>
               <p className="text-body text-ink-muted">
                 {activos.length
-                  ? 'No hay solicitudes de antecedentes pendientes. Puede consultar las novedades de cada caso.'
+                  ? 'No hay solicitudes de antecedentes pendientes. Puedes consultar las novedades de cada caso.'
                   : reclamos.length
-                    ? 'Puede revisar los resultados y el historial desde su listado.'
-                    : 'Al registrar un reclamo podrá consultar su estado y aportar antecedentes.'}
+                    ? 'Puedes revisar los resultados y el historial desde tu listado.'
+                    : 'Al registrar un reclamo podrás consultar su estado y aportar antecedentes.'}
               </p>
               {reclamos.length > 0 && (
                 <Link
@@ -125,46 +139,46 @@ export function ClienteInicioPage() {
             </>
           )}
         </Glass>
-      </div>
-      <Glass>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 px-1">
-          <h2 className="text-title">Tus reclamos recientes</h2>
-          {reclamos.length > 0 && (
-            <Link
-              to="/portal/reclamos"
-              className="flex items-center gap-1 rounded-sm text-label text-brand hover:underline"
-            >
-              Ver todos
-              <ArrowRight size={15} aria-hidden />
-            </Link>
+        <Glass className="flex flex-col lg:col-span-2">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 px-1 compact:mb-3">
+            <h2 className="text-title">Tus reclamos recientes</h2>
+            {reclamos.length > 0 && (
+              <Link
+                to="/portal/reclamos"
+                className="flex items-center gap-1 rounded-sm text-label text-brand hover:underline"
+              >
+                Ver todos
+                <ArrowRight size={15} aria-hidden />
+              </Link>
+            )}
+          </div>
+          {reclamos.length ? (
+            <div className="grid flex-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {reclamos.slice(0, 3).map((row) => (
+                <ReclamoClienteCard key={row.id} reclamo={row} compacto />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 py-10 text-center">
+              <span className="glass-tile grid size-14 place-items-center rounded-full text-brand">
+                <FileText size={26} strokeWidth={1.5} aria-hidden />
+              </span>
+              <h2 className="text-title">Tu primer reclamo comienza aquí</h2>
+              <p className="max-w-md text-body text-ink-muted">
+                Cuando registres un caso, podrás consultar su estado y sus
+                novedades en este espacio.
+              </p>
+              <Link
+                to="/portal/reclamos/nuevo"
+                className="glass-tile mt-2 inline-flex items-center gap-2 rounded-full px-5 py-3 text-label"
+              >
+                <Plus size={16} aria-hidden />
+                Crear mi primer reclamo
+              </Link>
+            </div>
           )}
-        </div>
-        {reclamos.length ? (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {reclamos.slice(0, 3).map((row) => (
-              <ReclamoClienteCard key={row.id} reclamo={row} compacto />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-3 py-10 text-center">
-            <span className="glass-tile grid size-14 place-items-center rounded-full text-brand">
-              <FileText size={26} strokeWidth={1.5} aria-hidden />
-            </span>
-            <h2 className="text-title">Tu primer reclamo comienza aquí</h2>
-            <p className="max-w-md text-body text-ink-muted">
-              Cuando registres un caso, podrás consultar su estado y sus
-              novedades en este espacio.
-            </p>
-            <Link
-              to="/portal/reclamos/nuevo"
-              className="glass-tile mt-2 inline-flex items-center gap-2 rounded-full px-5 py-3 text-label"
-            >
-              <Plus size={16} aria-hidden />
-              Crear mi primer reclamo
-            </Link>
-          </div>
-        )}
-      </Glass>
+        </Glass>
+      </div>
     </div>
   )
 }

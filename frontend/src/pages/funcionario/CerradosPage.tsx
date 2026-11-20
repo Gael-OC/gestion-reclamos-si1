@@ -4,12 +4,8 @@ import { Glass } from '@/components/ui/Glass'
 import { RingStat } from '@/components/ui/RingStat'
 import { PageHeading } from '@/components/layout/PageHeading'
 import { TrendCard } from '@/features/dashboard/TrendCard'
-import {
-  CERRADOS,
-  MI_MES,
-  RESULTADOS,
-  type Resultado,
-} from '@/features/funcionario/escenario'
+import { RESULTADOS, type Resultado } from '@/features/funcionario/escenario'
+import { useMisCasos } from '@/features/funcionario/useMisCasos'
 import { mesActual, mesAnterior, mesesRecientes } from '@/lib/fechas'
 
 const unDecimal = (value: number) =>
@@ -17,7 +13,8 @@ const unDecimal = (value: number) =>
 
 /** Cerrados de la funcionaria y su mes (KPI 1 y 3, solo sus casos). */
 export function CerradosPage() {
-  const enPlazo = Math.round((MI_MES.enPlazo / MI_MES.cierres) * 100)
+  const { cerrados, mes } = useMisCasos()
+  const enPlazo = Math.round((mes.enPlazo / mes.cierres) * 100)
   const color: Record<Resultado, string> = {
     total: 'bg-brand',
     parcial: 'bg-brand-glow',
@@ -26,10 +23,10 @@ export function CerradosPage() {
   const resultados = (Object.keys(RESULTADOS) as Resultado[]).map((key) => ({
     key,
     label: RESULTADOS[key],
-    n: CERRADOS.filter((caso) => caso.resultado === key).length,
+    n: cerrados.filter((caso) => caso.resultado === key).length,
     color: color[key],
   }))
-  const serie = MI_MES.resolucion
+  const serie = mes.resolucion
   const mejora = serie.at(-2)! - serie.at(-1)!
 
   return (
@@ -48,13 +45,13 @@ export function CerradosPage() {
             <div className="grid h-full min-h-28 place-items-center [container-type:size]">
               <RingStat
                 value={enPlazo}
-                label={`${enPlazo} %: ${MI_MES.enPlazo} de ${MI_MES.cierres} cierres en plazo`}
+                label={`${enPlazo} %: ${mes.enPlazo} de ${mes.cierres} cierres en plazo`}
                 className="size-[min(100cqw,100cqh)] max-h-52 max-w-52"
               >
                 <span className="text-hero-number">{enPlazo}</span>
                 <span className="text-caption text-ink-muted"> %</span>
                 <span className="block text-caption text-ink-muted">
-                  {MI_MES.enPlazo} de {MI_MES.cierres}
+                  {mes.enPlazo} de {mes.cierres}
                 </span>
               </RingStat>
             </div>
@@ -63,7 +60,7 @@ export function CerradosPage() {
                 <p className="text-caption text-ink-muted">
                   Cómo terminaron ·{' '}
                   <span className="font-medium text-danger">
-                    {MI_MES.cierres - MI_MES.enPlazo} fuera de plazo
+                    {mes.cierres - mes.enPlazo} fuera de plazo
                   </span>
                 </p>
                 <div
@@ -77,7 +74,7 @@ export function CerradosPage() {
                     <span
                       key={r.key}
                       className={r.color}
-                      style={{ width: `${(r.n / CERRADOS.length) * 100}%` }}
+                      style={{ width: `${(r.n / cerrados.length) * 100}%` }}
                     />
                   ))}
                 </div>
@@ -112,11 +109,11 @@ export function CerradosPage() {
 
         <Glass
           title="Cerrados este mes"
-          subtitle={`${CERRADOS.length} casos · los más recientes primero`}
+          subtitle={`${cerrados.length} casos · los más recientes primero`}
           className="flex flex-col md:col-span-2 lg:col-span-3 tall:min-h-0 compact:p-4 [&>header]:mb-1"
         >
           <ul className="flex flex-col tall:min-h-0 tall:overflow-y-auto">
-            {CERRADOS.map((caso) => (
+            {cerrados.map((caso) => (
               <li key={caso.id}>
                 <Link
                   to={`/funcionario/casos/${caso.id}`}

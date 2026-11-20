@@ -2,6 +2,7 @@ import { ArrowUpRight, Building2, CalendarDays } from 'lucide-react'
 import { Link } from 'react-router'
 import { EstadoBadge } from '@/features/reclamos/EstadoBadge'
 import { cn } from '@/lib/cn'
+import { ETAPAS, indiceEtapa } from './etapas'
 import {
   fechaVisible,
   type ReclamoListado,
@@ -14,11 +15,12 @@ export function ReclamoClienteCard({
   reclamo: ReclamoListado
   compacto?: boolean
 }) {
+  const etapa = indiceEtapa(reclamo.estado)
   return (
     <Link
       to={`/portal/reclamos/${reclamo.id}`}
       className={cn(
-        'group flex min-w-0 flex-col gap-4 rounded-lg p-5 transition-[background-color,box-shadow] hover:bg-glass-strong hover:shadow-lift',
+        'group flex h-full min-w-0 flex-col gap-4 compact:gap-3 rounded-lg p-5 transition-[background-color,box-shadow] hover:bg-glass-strong hover:shadow-lift',
         compacto ? 'glass-tile p-4' : 'glass-panel',
       )}
     >
@@ -33,7 +35,25 @@ export function ReclamoClienteCard({
           <span className="min-w-0 break-words">{reclamo.empresa}</span>
         </p>
       </div>
-      <div className="flex items-center justify-between gap-3 border-t border-glass-shade pt-4">
+      {etapa >= 0 && (
+        <div>
+          <ol aria-hidden className="grid grid-cols-5 gap-1.5">
+            {ETAPAS.map((label, index) => (
+              <li
+                key={label}
+                className={cn(
+                  'h-1.5 rounded-full',
+                  index <= etapa ? 'bg-brand' : 'bg-glass-shade',
+                )}
+              />
+            ))}
+          </ol>
+          <p className="mt-2 text-caption text-ink-muted compact:hidden">
+            Etapa {etapa + 1} de {ETAPAS.length} · {ETAPAS[etapa]}
+          </p>
+        </div>
+      )}
+      <div className="flex items-center justify-between gap-3 border-t border-glass-shade pt-4 compact:pt-3">
         <p className="flex items-center gap-1.5 text-caption text-ink-muted">
           <CalendarDays size={14} aria-hidden />
           {fechaVisible(reclamo.fechaIngreso)}

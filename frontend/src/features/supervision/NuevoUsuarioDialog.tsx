@@ -33,7 +33,7 @@ export function NuevoUsuarioDialog({
         ? 'Escriba nombre y apellido.'
         : '',
     correo: !CORREO.test(correo.trim())
-      ? 'Escriba un correo completo, por ejemplo nombre@unidad.test.'
+      ? 'Escriba un correo completo, por ejemplo nombre@demo.local.'
       : correos.includes(correo.trim().toLowerCase())
         ? 'Ya existe un usuario con ese correo.'
         : '',
@@ -88,7 +88,7 @@ export function NuevoUsuarioDialog({
         label="Correo"
         value={correo}
         onValueChange={setCorreo}
-        placeholder="nombre@unidad.test"
+        placeholder="nombre@demo.local"
         required
         error={mostrar('correo')}
       />

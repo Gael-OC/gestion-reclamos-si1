@@ -147,7 +147,13 @@ export function modeloDemo(estado: EstadoDemo, usuario: Usuario | null) {
     )
       return []
     const nuevos = gestiones[reclamo.id] ?? []
-    const inicial = seguimientoInicial(propio).filter(
+    // Los eventos de partida salen del estado con que se cargó el caso; los
+    // cambios posteriores ya quedan como gestiones con su propia fecha.
+    const original =
+      [...creados, ...RECLAMOS_CON_CLIENTE, ...CERRADOS_CLIENTE].find(
+        (row) => row.id === reclamo.id,
+      ) ?? propio
+    const inicial = seguimientoInicial(original).filter(
       (evento) =>
         evento.tipo !== 'resultado' ||
         !nuevos.some((gestion) => gestion.titulo.startsWith('Caso cerrado')),
@@ -168,7 +174,13 @@ export function modeloDemo(estado: EstadoDemo, usuario: Usuario | null) {
       id === CASO_EJEMPLO
         ? detalleReclamo(id, reclamos, RESPONSABLES)
         : (casoDeFuncionaria(id) ??
-          detalleReclamo(id, [...reclamos, ...CERRADOS_CLIENTE], RESPONSABLES))
+          // La ficha base parte del caso tal como se cargó; responsable,
+          // estado y gestiones posteriores se agregan abajo desde los cambios.
+          detalleReclamo(
+            id,
+            [...creados, ...RECLAMOS_CON_CLIENTE, ...CERRADOS_CLIENTE],
+            RESPONSABLES,
+          ))
     if (!base) return null
     const cambio = cambios[id]
     const responsableId =
@@ -219,8 +231,28 @@ export function modeloDemo(estado: EstadoDemo, usuario: Usuario | null) {
     }
   }
 
+  // Casos pendientes de antecedentes cuyo consumidor ya respondió después de
+  // la última solicitud: vuelven a la bandeja de revisión del supervisor.
+  const recibidos = reclamos
+    .filter((row) => row.estado === 'pendiente_antecedentes')
+    .filter((row) => {
+      const ultimoAporte = Math.max(
+        0,
+        ...(aportes[row.id] ?? []).map((evento) => evento.registradoEn ?? 0),
+      )
+      const ultimaSolicitud = Math.max(
+        0,
+        ...(gestiones[row.id] ?? [])
+          .filter((evento) => evento.solicitud)
+          .map((evento) => evento.registradoEn ?? 0),
+      )
+      return ultimoAporte > ultimaSolicitud
+    })
+    .map((row) => row.id)
+
   return {
     reclamos,
+    recibidos,
     activos,
     resumenCarga: `${activos.total - activos.sinAsignar} asignados · ${activos.sinAsignar} sin asignar`,
     historicoCliente: CERRADOS_CLIENTE,

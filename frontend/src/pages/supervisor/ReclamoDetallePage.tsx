@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { ArrowLeft, CircleCheck, FileText, UserRoundCog } from 'lucide-react'
+import {
+  ArrowLeft,
+  CircleCheck,
+  FileText,
+  Inbox,
+  UserRoundCog,
+} from 'lucide-react'
 import { Glass } from '@/components/ui/Glass'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +18,7 @@ import { COLOR_PLAZO, plazoUsado, tonoPlazo } from '@/features/reclamos/plazo'
 import { Historial } from '@/features/reclamos/detalle/Historial'
 import { AsignarDialog } from '@/features/supervision/AsignarDialog'
 import { EQUIPO } from '@/features/supervision/escenario'
+import { useBandeja } from '@/features/supervision/useBandeja'
 import { diaRelativo } from '@/lib/fechas'
 
 export function ReclamoDetallePage() {
@@ -21,6 +28,8 @@ export function ReclamoDetallePage() {
 
 function ReclamoDetalle({ reclamoId }: { reclamoId: string }) {
   const { detalle: obtenerDetalle, registrarGestion } = useReclamosDemo()
+  const { ingresos } = useBandeja()
+  const enBandeja = ingresos.some((item) => item.id === reclamoId)
   const detalle = obtenerDetalle(reclamoId)
   const [cambio, setCambio] = useState<string | null>(null)
   const [abierto, setAbierto] = useState(false)
@@ -71,14 +80,25 @@ function ReclamoDetalle({ reclamoId }: { reclamoId: string }) {
         <div className="flex flex-wrap items-center gap-2">
           <EstadoBadge estado={detalle.estado} short />
           {activo && <PlazoChip dias={dias} />}
-          {activo && (
-            <Button
-              variant="ink"
-              icon={UserRoundCog}
-              onClick={() => setAbierto(true)}
+          {enBandeja ? (
+            <Link
+              to={`/supervisor/bandeja?caso=${detalle.id}`}
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-label text-on-ink shadow-ink hover:bg-ink-soft"
             >
-              Reasignar
-            </Button>
+              <Inbox size={17} strokeWidth={1.6} aria-hidden />
+              Revisar en bandeja
+            </Link>
+          ) : (
+            activo &&
+            detalle.estado !== 'pendiente_antecedentes' && (
+              <Button
+                variant="ink"
+                icon={UserRoundCog}
+                onClick={() => setAbierto(true)}
+              >
+                Reasignar
+              </Button>
+            )
           )}
         </div>
       </header>

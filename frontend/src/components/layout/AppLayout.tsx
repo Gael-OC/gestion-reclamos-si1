@@ -4,12 +4,24 @@ import { TopBar } from '@/components/layout/TopBar'
 import { NAV, type Perfil } from '@/features/perfiles/perfiles'
 import type { PerfilContext } from '@/features/perfiles/usePerfil'
 import { useAuth } from '@/features/auth/context'
+import { useBandeja } from '@/features/supervision/useBandeja'
+import { useMisCasos } from '@/features/funcionario/useMisCasos'
 
 export function AppLayout() {
   const navigate = useNavigate()
   const { usuario, cerrarSesion } = useAuth()
   const perfil: Perfil =
     usuario?.rol === 'funcionario' ? 'funcionario' : 'supervisor'
+  const { nuevos, antecedentes } = useBandeja()
+  const { porIniciar } = useMisCasos()
+  // Lo que espera una acción: ingresos por revisar y casos por iniciar.
+  const pendientes: Record<string, number> = {
+    '/supervisor/bandeja': nuevos + antecedentes,
+    '/funcionario': porIniciar,
+  }
+  const items = NAV[perfil].map((item) =>
+    pendientes[item.to] ? { ...item, badge: pendientes[item.to] } : item,
+  )
 
   function buscar(texto: string) {
     const params = new URLSearchParams()
@@ -22,7 +34,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-dvh gap-6 px-4 pt-4 pb-28 sm:px-6 sm:pt-6 lg:px-10 lg:py-8 xl:px-16 tall:h-dvh tall:py-10 compact:gap-5 compact:py-5">
       <SideRail
-        items={NAV[perfil]}
+        items={items}
         usuario={usuario?.nombre ?? ''}
         onSalir={cerrarSesion}
       />

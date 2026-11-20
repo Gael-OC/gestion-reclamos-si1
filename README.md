@@ -105,8 +105,8 @@ Abre entonces [http://127.0.0.1:5174](http://127.0.0.1:5174).
 
 | Ruta                            | Vista                                                     |
 | ------------------------------- | --------------------------------------------------------- |
-| `/login`                        | Espacio reservado del login, con accesos de demo          |
-| `/portal`                       | Espacio reservado del portal del consumidor               |
+| `/login`                        | Acceso; el perfil sale de la cuenta (ver credenciales)    |
+| `/portal`                       | Portal del consumidor: registrar y seguir sus reclamos    |
 | `/supervisor`                   | Inicio del supervisor: KPI en formas y tareas del día     |
 | `/supervisor/bandeja`           | Revisar ingresos: asignar, pedir antecedentes o anular    |
 | `/supervisor/equipo`            | Carga por funcionario (KPI 5) y reasignación              |
@@ -114,16 +114,17 @@ Abre entonces [http://127.0.0.1:5174](http://127.0.0.1:5174).
 | `/supervisor/usuarios`          | Administrar usuarios internos                             |
 | `/supervisor/configuracion`     | Plazo, aviso de vencimiento, estados y catálogos          |
 | `/reclamos`                     | Listado de reclamos                                       |
-| `/reclamos/nuevo`               | Registro de reclamo (pasará al portal)                    |
 | `/reclamos/:reclamoId`          | Ficha e historial; por ejemplo, `/reclamos/R-2026-004812` |
 | `/funcionario`                  | Mis casos: prioridades, plazos y etapas                   |
 | `/funcionario/casos/:reclamoId` | Gestión del caso guiada por el próximo paso               |
 | `/funcionario/cerrados`         | Cierres del mes de la funcionaria (KPI 1 y 3)             |
 
 Las rutas anteriores `/dashboard`, `/indicadores`, `/asignaciones` y
-`/configuracion` redirigen a sus equivalentes del supervisor. Las acciones
-(asignar, cerrar, crear usuarios, etc.) cambian solo la vista en curso y se
-pierden al recargar: no hay backend conectado.
+`/configuracion` redirigen a sus equivalentes del supervisor, y
+`/reclamos/nuevo` a la Bandeja: los reclamos se ingresan desde el portal. Las
+acciones sobre reclamos se comparten entre perfiles mientras no se recargue la
+página (no hay backend conectado); las credenciales de demo están en
+[docs/architecture.md](docs/architecture.md).
 
 ### Capturas de los mockups para la presentación
 

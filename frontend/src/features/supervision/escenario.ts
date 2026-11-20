@@ -8,6 +8,9 @@ import {
   RECLAMOS_DEMO,
   RESPONSABLES,
 } from '@/features/reclamos/listado/mockData'
+import type { ReclamoListado } from '@/features/reclamos/listado/model'
+import { RECLAMOS_CON_CLIENTE } from '@/features/cliente/mockData'
+import { CUENTAS_EJEMPLO } from '@/features/auth/model'
 
 /*
  * Escenario ficticio de las vistas del supervisor. Las cifras totales salen de
@@ -64,6 +67,8 @@ export type IngresoBandeja = {
   comuna: string
   consumidor: string
   relato: string
+  /** Lo último que respondió el consumidor al pedirle antecedentes. */
+  respuesta?: string
   adjuntos: string[]
   /** Días hasta la fecha límite. */
   dias: number
@@ -82,52 +87,61 @@ const NOMBRES_CONSUMIDOR = [
   'Tomás Contreras',
 ]
 
-function aIngreso(
-  row: (typeof RECLAMOS_DEMO)[number],
-  index: number,
+const INDICE_SEMILLA = new Map(
+  RECLAMOS_DEMO.map((row, index) => [row.id, index]),
+)
+
+/**
+ * Ficha de bandeja de un reclamo del listado compartido. Los casos del portal
+ * conservan su consumidor y relato; los de prueba reciben datos de ejemplo.
+ */
+export function aIngreso(
+  row: ReclamoListado,
   tipo: IngresoBandeja['tipo'],
+  adjuntosEnviados: string[] = [],
 ): IngresoBandeja {
+  const index = INDICE_SEMILLA.get(row.id)
+  const semilla = index !== undefined && !row.clienteId
   return {
     id: row.id,
     asunto: row.asunto,
     empresa: row.empresa,
     mercado: row.mercado,
     comuna: row.comuna,
-    consumidor: NOMBRES_CONSUMIDOR[index % NOMBRES_CONSUMIDOR.length],
+    consumidor:
+      row.consumidor ??
+      NOMBRES_CONSUMIDOR[(index ?? 0) % NOMBRES_CONSUMIDOR.length],
     relato:
       row.descripcion ??
       `${row.asunto}. Pedí una solución a ${row.empresa} y no obtuve respuesta.`,
-    adjuntos:
-      tipo === 'antecedentes'
-        ? ['Antecedentes enviados.pdf', 'Comprobante.pdf']
-        : index % 3 === 0
-          ? []
-          : ['Comprobante.pdf'],
+    adjuntos: adjuntosEnviados.length
+      ? adjuntosEnviados
+      : !semilla
+        ? []
+        : tipo === 'antecedentes'
+          ? ['Antecedentes enviados.pdf', 'Comprobante.pdf']
+          : (index ?? 0) % 3 === 0
+            ? []
+            : ['Comprobante.pdf'],
     dias: row.diasRestantes ?? 0,
     tipo,
   }
 }
 
-/** Con antecedentes ya entregados por el consumidor (vuelven a revisión). */
-const ANTECEDENTES_RECIBIDOS = 4
-
 /**
- * Bandeja de revisión completa, tomada del listado de prueba para que los
- * folios coincidan: los reclamos ingresados y los que ya recibieron los
- * antecedentes pedidos. Primero los de menor plazo restante.
+ * Casos de prueba que ya entregaron los antecedentes pedidos y vuelven a la
+ * bandeja. Se excluyen los de las cuentas de cliente de la demo, que todavía
+ * deben responder desde el portal.
  */
-export const BANDEJA = {
-  nuevos: SIN_ASIGNAR.ingresados,
-  antecedentes: ANTECEDENTES_RECIBIDOS,
-  ingresos: [
-    ...RECLAMOS_DEMO.filter((row) => row.estado === 'ingresado').map(
-      (row, index) => aIngreso(row, index, 'nuevo'),
+export const RECIBIDOS_SEMILLA = RECLAMOS_DEMO.filter(
+  (row) =>
+    row.estado === 'pendiente_antecedentes' &&
+    !RECLAMOS_CON_CLIENTE.some(
+      (propio) => propio.id === row.id && propio.clienteId,
     ),
-    ...RECLAMOS_DEMO.filter((row) => row.estado === 'pendiente_antecedentes')
-      .slice(0, ANTECEDENTES_RECIBIDOS)
-      .map((row, index) => aIngreso(row, index + 3, 'antecedentes')),
-  ].sort((a, b) => a.dias - b.dias),
-}
+)
+  .slice(0, 4)
+  .map((row) => row.id)
 
 export type UsuarioInterno = {
   id: string
@@ -143,20 +157,24 @@ const correo = (nombre: string) =>
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
-    .replace(/\s+/g, '.')}@unidad.test`
+    .replace(/\s+/g, '.')}@demo.local`
+
+/** Correo de acceso cuando la persona tiene cuenta de ejemplo en el login. */
+const cuentaDe = (nombre: string) =>
+  CUENTAS_EJEMPLO.find((cuenta) => cuenta.nombre === nombre)?.email
 
 export const USUARIOS_INTERNOS: UsuarioInterno[] = [
   {
     id: 'andrea-fuentes',
     nombre: 'Andrea Fuentes',
-    correo: correo('Andrea Fuentes'),
+    correo: cuentaDe('Andrea Fuentes') ?? correo('Andrea Fuentes'),
     perfil: 'supervisor',
     activo: true,
   },
   ...EQUIPO.map((persona) => ({
     id: persona.id,
     nombre: persona.nombre,
-    correo: correo(persona.nombre),
+    correo: cuentaDe(persona.nombre) ?? correo(persona.nombre),
     perfil: 'funcionario' as const,
     activo: true,
     casos: persona.activos,

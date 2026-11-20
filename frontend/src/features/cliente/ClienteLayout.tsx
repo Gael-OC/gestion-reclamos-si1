@@ -26,6 +26,7 @@ export function ClienteLayout() {
         usuario={usuario?.nombre ?? ''}
         onSalir={cerrarSesion}
         mostrarNotificaciones={false}
+        fija
       />
       <div className="flex min-w-0 flex-1 flex-col gap-6 compact:gap-5">
         <Glass

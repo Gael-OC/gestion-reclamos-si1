@@ -77,6 +77,10 @@ export function AuthLayout({
           </>
         )}
       </div>
+      <p className="max-w-5xl text-center text-caption text-ink-muted">
+        Proyecto académico UCN · Datos ficticios · Sin vinculación institucional
+        con SERNAC
+      </p>
     </main>
   )
 }

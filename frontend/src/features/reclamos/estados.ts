@@ -35,7 +35,7 @@ export const ESTADOS: Record<Estado, EstadoInfo> = {
     icon: FileText,
   },
   asignado: { label: 'Asignado', pill: 'pill-brand', icon: UserPlus },
-  en_gestion: { label: 'En gestión', pill: 'pill-filled', icon: Clock },
+  en_gestion: { label: 'En gestión', pill: 'pill-brand', icon: Clock },
   esperando_empresa: {
     label: 'Esperando respuesta de empresa',
     short: 'Esperando empresa',
