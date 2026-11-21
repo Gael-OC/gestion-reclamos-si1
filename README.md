@@ -23,9 +23,9 @@ Las dependencias están fijadas en `frontend/package-lock.json` y
 
 ```text
 frontend/    Aplicación React, rutas provisionales, estilos y componentes
-backend/     API mínima, configuración de datos y preparación de Alembic
+backend/     API REST (login, reclamos, asignaciones, seguimiento y plazos), Alembic
 analytics/   Documentación futura de KPI y Power BI
-docs/        Arquitectura y acuerdos de trabajo del grupo
+docs/        Arquitectura, contrato de la API (docs/api/) y acuerdos del grupo
 .github/     Plantilla de pull requests
 AGENTS.md    Instrucciones de apoyo para asistentes de programación
 compose.yaml PostgreSQL para desarrollo local
@@ -38,8 +38,8 @@ compose.yaml PostgreSQL para desarrollo local
 - Python 3.12, 3.13 o 3.14 con pip y soporte para entornos virtuales.
 - Docker con Docker Compose para usar PostgreSQL. El motor de Docker debe estar iniciado.
 
-No se necesita Power BI para ejecutar esta base. Frontend y `/health` funcionan
-sin iniciar PostgreSQL.
+No se necesita Power BI para ejecutar esta base. Frontend y backend funcionan
+sin iniciar PostgreSQL: por ahora la API guarda los datos en memoria.
 
 ## Instalación y ejecución local
 
@@ -52,13 +52,18 @@ cp .env.example .env
 cp backend/.env.example backend/.env
 ```
 
-En PowerShell, reemplaza `cp` por `Copy-Item`. Los valores son ficticios y solo
-sirven para desarrollo local. Los archivos `.env` no se suben a Git.
-Si cambias usuario, contraseña, base o puerto en `.env`, actualiza también
-`DATABASE_URL` en `backend/.env`. Usa una contraseña apta para una URL o codifica
-sus caracteres especiales.
+En PowerShell, reemplaza `cp` por `Copy-Item`. Los archivos `.env` se guardan
+localmente y Git los ignora. El frontend y la API en memoria pueden arrancar
+con los archivos de ejemplo tal como se copian. Las variables con claves y
+contraseñas se completan según lo que necesites ejecutar. Puedes generar un
+valor nuevo con `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
 
 ### 2. PostgreSQL — desde la raíz, cuando se necesite
+
+Define `POSTGRES_PASSWORD` en el `.env` de la raíz. Para conectar Alembic, define
+`DATABASE_URL` en `backend/.env` con el mismo usuario, contraseña, puerto y base.
+Usa el formato `postgresql+psycopg://USUARIO:CONTRASENA@127.0.0.1:PUERTO/BASE`
+y codifica los caracteres especiales de la contraseña para la URL.
 
 ```bash
 docker compose config --quiet
@@ -174,6 +179,17 @@ responder `{"status":"ok"}`. La documentación automática está en
 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 `/health` comprueba el servidor, sin consultar la base de datos.
 
+La API usa almacenamiento en memoria y parte sin usuarios. Para probar el flujo
+con datos ficticios, configura `CARGAR_DATOS_DEMO=true` y una `CONTRASENA_DEMO` propia
+de al menos 16 caracteres en `backend/.env`. En `/docs`, inicia sesión con
+`supervisor@reclamos.test`, copia el `access_token` y pégalo en **Authorize**.
+Los demás usuarios, endpoints y reglas de plazo están en
+[docs/api/README.md](docs/api/README.md).
+
+Si se omite `JWT_SECRET`, el backend genera una clave por proceso y las sesiones
+se invalidan al reiniciar. Para conservarlas o usar varios procesos, configura
+una clave propia de al menos 32 caracteres en `backend/.env`.
+
 ### 5. Verificaciones locales
 
 Desde `frontend/`:
@@ -194,7 +210,11 @@ python -m ruff check .
 python -m ruff format --check .
 python -m unittest discover -s tests -v
 python -m alembic heads
+python -m scripts.exportar_openapi
 ```
+
+`exportar_openapi` actualiza `docs/api/openapi.json`; ejecutarlo al cambiar
+endpoints o esquemas e incluir el archivo en el pull request.
 
 `heads` lista las revisiones disponibles; la estructura inicial aún no incluye
 ninguna. Al cambiar el modelo de datos, agregar y revisar las migraciones
@@ -266,9 +286,13 @@ El repositorio incluye el panel operativo y dos composiciones de indicadores con
 datos de prueba; las otras vistas siguen siendo provisionales. También incluye
 `/health`, configuración de PostgreSQL y Alembic, verificaciones y documentación.
 
-El desarrollo del proyecto contempla la gestión de usuarios y roles, registro y seguimiento de
-reclamos, asignaciones, gestiones, estados, control de plazos y seis KPI en
-Power BI. Estas funcionalidades están pendientes de implementación sobre esta base.
+El backend incluye una base por capas con login JWT y roles, registro y
+seguimiento de reclamos, asignación de funcionarios, gestiones, flujo de estados
+y control de plazos, con pruebas automáticas. Los datos se guardan en memoria
+mediante repositorios intercambiables: falta el modelo de datos en PostgreSQL
+(tablas, migraciones y repositorios SQL), la integración del frontend con la API
+y los seis KPI en Power BI. Los contratos son una propuesta descrita en
+[docs/api/README.md](docs/api/README.md).
 Actualizar esta sección a medida que el equipo avance.
 
 El equipo debe confirmar los contratos API, modelo de datos, roles, reglas de

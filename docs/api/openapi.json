@@ -1,0 +1,2355 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gestión de reclamos — Prototipo académico",
+    "description": "Prototipo académico ficticio UCN 2026, sin relación institucional con SERNAC.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "infraestructura"
+        ],
+        "summary": "Health",
+        "description": "Comprueba el proceso HTTP; no consulta PostgreSQL.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "autenticación"
+        ],
+        "summary": "Login",
+        "description": "Inicia sesión y entrega un token Bearer para el encabezado `Authorization`.",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginSolicitud"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "autenticación"
+        ],
+        "summary": "Usuario Actual",
+        "description": "Datos del usuario autenticado; útil para que el frontend conozca su rol.",
+        "operationId": "usuario_actual_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioLeer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/usuarios": {
+      "get": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Listar Usuarios",
+        "description": "Lista usuarios. Con `rol=funcionario&activo=true` entrega los asignables.",
+        "operationId": "listar_usuarios_api_v1_usuarios_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "rol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Rol"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rol"
+            }
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Activo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioLeer"
+                  },
+                  "title": "Response Listar Usuarios Api V1 Usuarios Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Crear Usuario",
+        "operationId": "crear_usuario_api_v1_usuarios_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioCrear"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioLeer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usuarios/{usuario_id}": {
+      "patch": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Actualizar Usuario",
+        "operationId": "actualizar_usuario_api_v1_usuarios__usuario_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioActualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioLeer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reclamos": {
+      "get": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Listar Reclamos",
+        "description": "Lista los reclamos visibles para el usuario. `estado` se puede repetir.",
+        "operationId": "listar_reclamos_api_v1_reclamos_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EstadoReclamo"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Estado"
+            }
+          },
+          {
+            "name": "funcionario_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Funcionario Id"
+            }
+          },
+          {
+            "name": "sin_asignar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Sin Asignar"
+            }
+          },
+          {
+            "name": "situacion_plazo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "en_plazo",
+                    "por_vencer",
+                    "vencido"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Situacion Plazo"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Busca en folio, consumidor, empresa y categoría",
+              "title": "Q"
+            },
+            "description": "Busca en folio, consumidor, empresa y categoría"
+          },
+          {
+            "name": "orden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "fecha_ingreso_desc",
+                "fecha_ingreso_asc",
+                "fecha_limite_asc",
+                "fecha_limite_desc"
+              ],
+              "type": "string",
+              "default": "fecha_ingreso_desc",
+              "title": "Orden"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Pagina"
+            }
+          },
+          {
+            "name": "por_pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Por Pagina"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_ReclamoResumen_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Crear Reclamo",
+        "description": "Registra un reclamo en estado `ingresado` y calcula su fecha límite.",
+        "operationId": "crear_reclamo_api_v1_reclamos_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReclamoCrear"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReclamoDetalle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reclamos/{reclamo_id}": {
+      "get": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Obtener Reclamo",
+        "operationId": "obtener_reclamo_api_v1_reclamos__reclamo_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reclamo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reclamo Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReclamoDetalle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Actualizar Reclamo",
+        "description": "Corrige datos de un reclamo activo. Queda registrado en el seguimiento.",
+        "operationId": "actualizar_reclamo_api_v1_reclamos__reclamo_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reclamo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reclamo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReclamoActualizar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReclamoDetalle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No válido en el estado actual",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reclamos/{reclamo_id}/estado": {
+      "post": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Cambiar Estado",
+        "description": "Cambia el estado según el flujo permitido. Ver `docs/api.md`.",
+        "operationId": "cambiar_estado_api_v1_reclamos__reclamo_id__estado_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reclamo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reclamo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambioEstadoSolicitud"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReclamoDetalle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No válido en el estado actual",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reclamos/{reclamo_id}/seguimiento": {
+      "get": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Ver Seguimiento",
+        "description": "Historial del reclamo en orden cronológico: creación, asignaciones, estados y gestiones.",
+        "operationId": "ver_seguimiento_api_v1_reclamos__reclamo_id__seguimiento_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reclamo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reclamo Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventoLeer"
+                  },
+                  "title": "Response Ver Seguimiento Api V1 Reclamos  Reclamo Id  Seguimiento Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reclamos/{reclamo_id}/gestiones": {
+      "post": {
+        "tags": [
+          "reclamos"
+        ],
+        "summary": "Registrar Gestion",
+        "description": "Registra una gestión (llamada, correo, oficio, nota) sin cambiar el estado.",
+        "operationId": "registrar_gestion_api_v1_reclamos__reclamo_id__gestiones_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reclamo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reclamo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GestionSolicitud"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventoLeer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No válido en el estado actual",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reclamos/{reclamo_id}/asignacion": {
+      "post": {
+        "tags": [
+          "asignaciones"
+        ],
+        "summary": "Asignar Funcionario",
+        "description": "Asigna o reasigna un funcionario. Un reclamo `ingresado` pasa a `asignado`.",
+        "operationId": "asignar_funcionario_api_v1_reclamos__reclamo_id__asignacion_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reclamo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Reclamo Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignacionSolicitud"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReclamoDetalle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reclamo no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No válido en el estado actual",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/asignaciones/carga": {
+      "get": {
+        "tags": [
+          "asignaciones"
+        ],
+        "summary": "Carga Por Funcionario",
+        "description": "Reclamos activos por funcionario, para elegir a quién asignar.",
+        "operationId": "carga_por_funcionario_api_v1_asignaciones_carga_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CargaFuncionario"
+                  },
+                  "type": "array",
+                  "title": "Response Carga Por Funcionario Api V1 Asignaciones Carga Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/plazos/alertas": {
+      "get": {
+        "tags": [
+          "control de plazos"
+        ],
+        "summary": "Alertas",
+        "description": "Reclamos activos vencidos o por vencer, del más urgente al menos urgente.",
+        "operationId": "alertas_api_v1_plazos_alertas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReclamoResumen"
+                  },
+                  "type": "array",
+                  "title": "Response Alertas Api V1 Plazos Alertas Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/plazos/resumen": {
+      "get": {
+        "tags": [
+          "control de plazos"
+        ],
+        "summary": "Resumen",
+        "description": "Conteos de activos, sin asignar, en plazo, por vencer y vencidos a la fecha de corte.",
+        "operationId": "resumen_api_v1_plazos_resumen_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenPlazos"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AsignacionSolicitud": {
+        "properties": {
+          "funcionario_id": {
+            "type": "integer",
+            "title": "Funcionario Id"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "funcionario_id"
+        ],
+        "title": "AsignacionSolicitud"
+      },
+      "CambioEstadoSolicitud": {
+        "properties": {
+          "estado": {
+            "$ref": "#/components/schemas/EstadoReclamo"
+          },
+          "comentario": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comentario",
+            "description": "Obligatorio para cerrar, anular o pedir antecedentes."
+          }
+        },
+        "type": "object",
+        "required": [
+          "estado"
+        ],
+        "title": "CambioEstadoSolicitud"
+      },
+      "CanalIngreso": {
+        "type": "string",
+        "enum": [
+          "web",
+          "presencial",
+          "telefono",
+          "correo"
+        ],
+        "title": "CanalIngreso"
+      },
+      "CargaFuncionario": {
+        "properties": {
+          "funcionario": {
+            "$ref": "#/components/schemas/UsuarioResumen"
+          },
+          "reclamos_activos": {
+            "type": "integer",
+            "title": "Reclamos Activos",
+            "description": "Reclamos asignados que no están cerrados ni anulados."
+          }
+        },
+        "type": "object",
+        "required": [
+          "funcionario",
+          "reclamos_activos"
+        ],
+        "title": "CargaFuncionario"
+      },
+      "ErrorRespuesta": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo",
+            "examples": [
+              "transicion_invalida"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail",
+          "codigo"
+        ],
+        "title": "ErrorRespuesta",
+        "description": "Formato de error común (propuesta). Los errores de validación 422 de FastAPI\nmantienen su formato por defecto: `detail` es una lista con los campos inválidos."
+      },
+      "EstadoReclamo": {
+        "type": "string",
+        "enum": [
+          "ingresado",
+          "pendiente_antecedentes",
+          "asignado",
+          "en_gestion",
+          "esperando_empresa",
+          "cerrado",
+          "anulado"
+        ],
+        "title": "EstadoReclamo",
+        "description": "Estados del proceso; coinciden con `frontend/src/features/reclamos/estados.ts`."
+      },
+      "EventoLeer": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/TipoEvento"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha"
+          },
+          "usuario": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detalle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detalle"
+          },
+          "estado_anterior": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstadoReclamo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "estado_nuevo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstadoReclamo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "funcionario_anterior": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "funcionario_nuevo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tipo",
+          "fecha",
+          "usuario",
+          "detalle",
+          "estado_anterior",
+          "estado_nuevo",
+          "funcionario_anterior",
+          "funcionario_nuevo"
+        ],
+        "title": "EventoLeer"
+      },
+      "GestionSolicitud": {
+        "properties": {
+          "descripcion": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Descripcion",
+            "examples": [
+              "Se envió oficio a la empresa por correo."
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "descripcion"
+        ],
+        "title": "GestionSolicitud"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginSolicitud": {
+        "properties": {
+          "correo": {
+            "type": "string",
+            "title": "Correo"
+          },
+          "contrasena": {
+            "type": "string",
+            "title": "Contrasena"
+          }
+        },
+        "type": "object",
+        "required": [
+          "correo",
+          "contrasena"
+        ],
+        "title": "LoginSolicitud"
+      },
+      "Pagina_ReclamoResumen_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReclamoResumen"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total de resultados que cumplen los filtros."
+          },
+          "pagina": {
+            "type": "integer",
+            "title": "Pagina"
+          },
+          "por_pagina": {
+            "type": "integer",
+            "title": "Por Pagina"
+          },
+          "paginas": {
+            "type": "integer",
+            "title": "Paginas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "pagina",
+          "por_pagina",
+          "paginas"
+        ],
+        "title": "Pagina[ReclamoResumen]"
+      },
+      "PlazoLeer": {
+        "properties": {
+          "fecha_limite": {
+            "type": "string",
+            "format": "date",
+            "title": "Fecha Limite"
+          },
+          "dias_transcurridos": {
+            "type": "integer",
+            "title": "Dias Transcurridos",
+            "description": "Días corridos desde el ingreso (hasta el cierre)."
+          },
+          "dias_restantes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dias Restantes",
+            "description": "Días corridos hasta la fecha límite; negativo si venció. Nulo si terminó."
+          },
+          "situacion": {
+            "$ref": "#/components/schemas/SituacionPlazo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fecha_limite",
+          "dias_transcurridos",
+          "dias_restantes",
+          "situacion"
+        ],
+        "title": "PlazoLeer"
+      },
+      "ReclamoActualizar": {
+        "properties": {
+          "consumidor_nombre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Nombre"
+          },
+          "consumidor_rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Rut"
+          },
+          "consumidor_correo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 254
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Correo"
+          },
+          "consumidor_telefono": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\+?[\\d\\s-]{8,20}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Telefono"
+          },
+          "empresa_nombre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Empresa Nombre"
+          },
+          "empresa_rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Empresa Rut"
+          },
+          "categoria": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoria"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          }
+        },
+        "type": "object",
+        "title": "ReclamoActualizar",
+        "description": "Corrige datos del reclamo. Solo se modifican los campos enviados."
+      },
+      "ReclamoCrear": {
+        "properties": {
+          "consumidor_nombre": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Consumidor Nombre"
+          },
+          "consumidor_rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Rut"
+          },
+          "consumidor_correo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 254
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Correo"
+          },
+          "consumidor_telefono": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\+?[\\d\\s-]{8,20}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Telefono"
+          },
+          "empresa_nombre": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Empresa Nombre"
+          },
+          "empresa_rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Empresa Rut"
+          },
+          "categoria": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Categoria",
+            "examples": [
+              "Telecomunicaciones"
+            ]
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 10,
+            "title": "Descripcion"
+          },
+          "canal": {
+            "$ref": "#/components/schemas/CanalIngreso",
+            "default": "presencial"
+          }
+        },
+        "type": "object",
+        "required": [
+          "consumidor_nombre",
+          "empresa_nombre",
+          "categoria",
+          "descripcion"
+        ],
+        "title": "ReclamoCrear"
+      },
+      "ReclamoDetalle": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "folio": {
+            "type": "string",
+            "title": "Folio"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoReclamo"
+          },
+          "consumidor_nombre": {
+            "type": "string",
+            "title": "Consumidor Nombre"
+          },
+          "empresa_nombre": {
+            "type": "string",
+            "title": "Empresa Nombre"
+          },
+          "categoria": {
+            "type": "string",
+            "title": "Categoria"
+          },
+          "canal": {
+            "$ref": "#/components/schemas/CanalIngreso"
+          },
+          "fecha_ingreso": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Ingreso"
+          },
+          "funcionario": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plazo": {
+            "$ref": "#/components/schemas/PlazoLeer"
+          },
+          "consumidor_rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Rut"
+          },
+          "consumidor_correo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Correo"
+          },
+          "consumidor_telefono": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consumidor Telefono"
+          },
+          "empresa_rut": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Empresa Rut"
+          },
+          "descripcion": {
+            "type": "string",
+            "title": "Descripcion"
+          },
+          "registrado_por": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fecha_cierre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Cierre"
+          },
+          "resultado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resultado"
+          },
+          "actualizado_en": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Actualizado En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "folio",
+          "estado",
+          "consumidor_nombre",
+          "empresa_nombre",
+          "categoria",
+          "canal",
+          "fecha_ingreso",
+          "funcionario",
+          "plazo",
+          "consumidor_rut",
+          "consumidor_correo",
+          "consumidor_telefono",
+          "empresa_rut",
+          "descripcion",
+          "registrado_por",
+          "fecha_cierre",
+          "resultado",
+          "actualizado_en"
+        ],
+        "title": "ReclamoDetalle"
+      },
+      "ReclamoResumen": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "folio": {
+            "type": "string",
+            "title": "Folio"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoReclamo"
+          },
+          "consumidor_nombre": {
+            "type": "string",
+            "title": "Consumidor Nombre"
+          },
+          "empresa_nombre": {
+            "type": "string",
+            "title": "Empresa Nombre"
+          },
+          "categoria": {
+            "type": "string",
+            "title": "Categoria"
+          },
+          "canal": {
+            "$ref": "#/components/schemas/CanalIngreso"
+          },
+          "fecha_ingreso": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Ingreso"
+          },
+          "funcionario": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plazo": {
+            "$ref": "#/components/schemas/PlazoLeer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "folio",
+          "estado",
+          "consumidor_nombre",
+          "empresa_nombre",
+          "categoria",
+          "canal",
+          "fecha_ingreso",
+          "funcionario",
+          "plazo"
+        ],
+        "title": "ReclamoResumen",
+        "description": "Fila del listado de reclamos."
+      },
+      "ResumenPlazos": {
+        "properties": {
+          "fecha_corte": {
+            "type": "string",
+            "format": "date",
+            "title": "Fecha Corte"
+          },
+          "activos": {
+            "type": "integer",
+            "title": "Activos"
+          },
+          "sin_asignar": {
+            "type": "integer",
+            "title": "Sin Asignar"
+          },
+          "en_plazo": {
+            "type": "integer",
+            "title": "En Plazo"
+          },
+          "por_vencer": {
+            "type": "integer",
+            "title": "Por Vencer"
+          },
+          "vencidos": {
+            "type": "integer",
+            "title": "Vencidos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fecha_corte",
+          "activos",
+          "sin_asignar",
+          "en_plazo",
+          "por_vencer",
+          "vencidos"
+        ],
+        "title": "ResumenPlazos",
+        "description": "Conteos a la fecha de corte sobre los reclamos visibles para el usuario."
+      },
+      "Rol": {
+        "type": "string",
+        "enum": [
+          "administrador",
+          "supervisor",
+          "funcionario"
+        ],
+        "title": "Rol",
+        "description": "Roles de usuario (propuesta pendiente de confirmar por el equipo)."
+      },
+      "SituacionPlazo": {
+        "type": "string",
+        "enum": [
+          "en_plazo",
+          "por_vencer",
+          "vencido",
+          "cerrado_en_plazo",
+          "cerrado_fuera_de_plazo",
+          "no_aplica"
+        ],
+        "title": "SituacionPlazo",
+        "description": "Situación del plazo de gestión, calculada a la fecha de corte."
+      },
+      "TipoEvento": {
+        "type": "string",
+        "enum": [
+          "creacion",
+          "actualizacion",
+          "asignacion",
+          "reasignacion",
+          "cambio_estado",
+          "gestion"
+        ],
+        "title": "TipoEvento",
+        "description": "Tipos de evento del historial de seguimiento de un reclamo."
+      },
+      "TokenRespuesta": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "const": "bearer",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "expira_en": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expira En"
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioLeer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "expira_en",
+          "usuario"
+        ],
+        "title": "TokenRespuesta"
+      },
+      "UsuarioActualizar": {
+        "properties": {
+          "nombre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nombre"
+          },
+          "rol": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Rol"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "activo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activo"
+          },
+          "contrasena": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contrasena"
+          }
+        },
+        "type": "object",
+        "title": "UsuarioActualizar",
+        "description": "Solo se modifican los campos enviados."
+      },
+      "UsuarioCrear": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "correo": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Correo"
+          },
+          "rol": {
+            "$ref": "#/components/schemas/Rol"
+          },
+          "contrasena": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Contrasena"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "correo",
+          "rol",
+          "contrasena"
+        ],
+        "title": "UsuarioCrear"
+      },
+      "UsuarioLeer": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "rol": {
+            "$ref": "#/components/schemas/Rol"
+          },
+          "correo": {
+            "type": "string",
+            "title": "Correo"
+          },
+          "activo": {
+            "type": "boolean",
+            "title": "Activo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "rol",
+          "correo",
+          "activo"
+        ],
+        "title": "UsuarioLeer"
+      },
+      "UsuarioResumen": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "rol": {
+            "$ref": "#/components/schemas/Rol"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "rol"
+        ],
+        "title": "UsuarioResumen"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "description": "Token obtenido en POST /api/v1/auth/login",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
